@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARC Firmware Tool", "ARC Firmware Tool.csproj", "{A16F86C5-51F8-4C29-8B61-A3E8ADEB328E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A16F86C5-51F8-4C29-8B61-A3E8ADEB328E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A16F86C5-51F8-4C29-8B61-A3E8ADEB328E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A16F86C5-51F8-4C29-8B61-A3E8ADEB328E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A16F86C5-51F8-4C29-8B61-A3E8ADEB328E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B26C01E6-CDAF-44EF-8D99-91B0E7256F27}
+	EndGlobalSection
+EndGlobal
