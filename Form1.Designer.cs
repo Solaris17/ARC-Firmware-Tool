@@ -51,6 +51,7 @@ namespace ARC_Firmware_Tool
             toolTip1 = new ToolTip(components);
             menuStrip1 = new MenuStrip();
             aboutToolStripMenuItem = new ToolStripMenuItem();
+            updateToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -200,13 +201,12 @@ namespace ARC_Firmware_Tool
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem, updateToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(902, 33);
             menuStrip1.TabIndex = 25;
             menuStrip1.Text = "menuStrip1";
-            menuStrip1.ItemClicked += menuStrip1_ItemClicked;
             // 
             // aboutToolStripMenuItem
             // 
@@ -215,6 +215,14 @@ namespace ARC_Firmware_Tool
             aboutToolStripMenuItem.RightToLeft = RightToLeft.No;
             aboutToolStripMenuItem.Size = new Size(78, 29);
             aboutToolStripMenuItem.Text = "About";
+            // 
+            // updateToolStripMenuItem
+            // 
+            updateToolStripMenuItem.Alignment = ToolStripItemAlignment.Right;
+            updateToolStripMenuItem.Name = "updateToolStripMenuItem";
+            updateToolStripMenuItem.Size = new Size(86, 29);
+            updateToolStripMenuItem.Text = "Update";
+            updateToolStripMenuItem.Click += updateToolStripMenuItem_Click;
             // 
             // Form1
             // 
@@ -271,5 +279,6 @@ namespace ARC_Firmware_Tool
         private ToolTip toolTip1;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem updateToolStripMenuItem;
     }
 }

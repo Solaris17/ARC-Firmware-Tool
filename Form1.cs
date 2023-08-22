@@ -1,7 +1,7 @@
-using Microsoft.VisualBasic.ApplicationServices;
 using System.Diagnostics;
 using System.Text;
-using System.Windows.Forms;
+using Octokit;
+
 
 // I am so trash at C# please help
 
@@ -10,9 +10,20 @@ namespace ARC_Firmware_Tool
     public partial class Form1 : Form
     {
 
+        private const string RepoOwner = "Solaris17";
+        private const string RepoName = "ARC-Firmware-Tool";
+        // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
+        private const string PersonalAccessToken = "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";
+        // Expire when?: Thu, Aug 22 2024
+        // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
+        private string currentVersion = "1.0.0";
+
         public Form1()
         {
             InitializeComponent();
+
+            // About box event handler
+            aboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -314,11 +325,101 @@ namespace ARC_Firmware_Tool
             System.Windows.Forms.Application.Exit();
         }
 
-        // Exit the about box
-        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        // About box
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AboutBox1 a = new AboutBox1();
-            a.Show();
+            a.ShowDialog();
+        }
+
+        // Lets do a software update
+        // Do some version checks
+        // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+        private async void updateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                bool updateNeeded = await CheckAndUpdateVersionAsync();
+
+                if (updateNeeded)
+                {
+                    var saveFileDialog = new SaveFileDialog
+                    {
+                        FileName = "ARC Firmware Tool.exe",
+                        Filter = "Executable files (*.exe)|*.exe",
+                        Title = "Save Update File"
+                    };
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        await DownloadAndSaveUpdate(saveFileDialog.FileName);
+                        MessageBox.Show("Update downloaded! Please relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Your already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async Task<bool> CheckAndUpdateVersionAsync()
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                string latestVersion = latestRelease.TagName;
+
+                if (Version.TryParse(latestVersion, out Version latest) &&
+                    Version.TryParse(currentVersion, out Version current) &&
+                    latest > current)
+                {
+                    return true; // New version is needed
+                }
+            }
+            return false; // App is up to date
+        }
+
+        private async Task DownloadAndSaveUpdate(string savePath)
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                var asset = latestRelease.Assets.FirstOrDefault();
+                if (asset != null)
+                {
+                    string assetUrl = asset.BrowserDownloadUrl;
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetAsync(assetUrl);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
+                            {
+                                await stream.CopyToAsync(fileStream);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
