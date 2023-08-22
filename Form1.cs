@@ -10,13 +10,13 @@ namespace ARC_Firmware_Tool
     public partial class Form1 : Form
     {
 
-        private const string RepoOwner = "Solaris17";
+        private const string RepoOwner = "";
         private const string RepoName = "ARC-Firmware-Tool";
         // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
-        private const string PersonalAccessToken = "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";
+        private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
-        private string currentVersion = "1.0.0";
+        private string currentVersion = "1.0.1";
 
         public Form1()
         {
