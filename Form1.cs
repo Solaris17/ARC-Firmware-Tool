@@ -175,6 +175,7 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Try to refactor smarter
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
         {
