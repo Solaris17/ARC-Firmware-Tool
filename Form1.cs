@@ -10,11 +10,6 @@ namespace ARC_Firmware_Tool
     public partial class Form1 : Form
     {
 
-        private object syncGate = new object();
-        private Process process;
-        private StringBuilder output = new StringBuilder();
-        private bool outputChanged;
-
         public Form1()
         {
             InitializeComponent();
@@ -27,7 +22,7 @@ namespace ARC_Firmware_Tool
 
         // Buttons here
 
-        // Firmware Browse button
+        // Firmware Browse buttons
         private void button4_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg1 = new OpenFileDialog();
@@ -84,95 +79,91 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Made this asyc so I can add more later.
         // Scan Hardware Button
         public void button1_Click(object sender, EventArgs e)
         {
-            lock (syncGate)
+            Task.Run(async () =>
             {
-                if (process != null) return;
-            }
+                // Read the resource files and copy them out.
+                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
-            output.Clear();
-            outputChanged = false;
-            richTextBox1.Text = "";
+                String myProject = "ARC_Firmware_Tool";
+                String file1 = "igsc.exe";
+                String file2 = "igsc.dll";
+                String outputPath = System.IO.Path.GetTempPath();
 
-            // Read the resource files and copy them out.
-            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-            String myProject = "ARC_Firmware_Tool";
-            String file1 = "igsc.exe";
-            String file2 = "igsc.dll";
-            String outputPath = System.IO.Path.GetTempPath();
-
-            // First file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                // First file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
                 {
-                    for (int i = 0; i < stream.Length; i++)
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
                     {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Next file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            process = new Process();
-            process.StartInfo.FileName = System.IO.Path.GetTempPath() + file1;
-            process.StartInfo.Arguments = "list-devices --info";
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.EnableRaisingEvents = true;
-            process.Start();
-
-            new Thread(ReadData1) { IsBackground = true }.Start();
-        }
-
-        private void ReadData1()
-        {
-            var input = process.StandardOutput;
-            int nextChar;
-            while ((nextChar = input.Read()) >= 0)
-            {
-                lock (syncGate)
-                {
-                    output.Append((char)nextChar);
-                    if (!outputChanged)
-                    {
-                        outputChanged = true;
-                        BeginInvoke(new Action(OnOutputChanged));
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
                     }
                 }
-            }
-            lock (syncGate)
-            {
-                process.Dispose();
-                process = null;
-            }
-        }
 
-        private void OnOutputChanged()
-        {
-            lock (syncGate)
-            {
-                richTextBox1.Text = output.ToString();
-                outputChanged = false;
-            }
+                // Next file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = System.IO.Path.Combine(outputPath, file1);
+                    process.StartInfo.Arguments = "list-devices -i";
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+
+                    process.OutputDataReceived += (s, evt) =>
+                    {
+                        if (!string.IsNullOrEmpty(evt.Data))
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                richTextBox1.AppendText(evt.Data + Environment.NewLine);
+                            }));
+                        }
+                    };
+
+                    process.ErrorDataReceived += (s, evt) =>
+                    {
+                        if (!string.IsNullOrEmpty(evt.Data))
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                richTextBox1.AppendText("Error: " + evt.Data + Environment.NewLine);
+                            }));
+                        }
+                    };
+
+                    process.EnableRaisingEvents = true;
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    await Task.Run(() =>
+                    {
+                        process.WaitForExit();
+                    });
+
+                    // more things
+                }
+            });
         }
 
         // Try to refactor smarter
@@ -249,7 +240,8 @@ namespace ARC_Firmware_Tool
 
         private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4)
         {
-            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty. Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
+            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty.
+            // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
                 await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName);

@@ -210,6 +210,7 @@ namespace ARC_Firmware_Tool
             // 
             // aboutToolStripMenuItem
             // 
+            aboutToolStripMenuItem.Alignment = ToolStripItemAlignment.Right;
             aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             aboutToolStripMenuItem.RightToLeft = RightToLeft.No;
             aboutToolStripMenuItem.Size = new Size(78, 29);
@@ -241,7 +242,7 @@ namespace ARC_Firmware_Tool
             MainMenuStrip = menuStrip1;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool";
+            Text = "ARC Firmware Tool (BETA)";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
