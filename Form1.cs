@@ -249,6 +249,7 @@ namespace ARC_Firmware_Tool
 
         private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4)
         {
+            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty. Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
                 await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName);
