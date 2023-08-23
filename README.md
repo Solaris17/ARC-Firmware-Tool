@@ -44,5 +44,21 @@ Trademarks are property of their respective owners.
 
 -----
 
+# Design Form
+
+## Versioning
+
+Versioning is done as follows
+
+Major.Minor.Patch
+
+Major versions are based on generation. For example 1.2.0 would be Intels first generation GPU ARC
+
+Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA
+
+Patch versions are generally just that though a feature may sneak in; usually in BETA builds.
+
+-----
+
 # Todo
 - Create seperate page for documentation
