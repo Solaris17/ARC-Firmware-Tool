@@ -30,7 +30,4 @@ Trademarks are property of their respective owners.
 
 # Todo
 - Add pictures locally
-- Clarify flash field verbage
 - Create seperate page for documentation
-- Write flash progress to log file
-- Add config data subroutine

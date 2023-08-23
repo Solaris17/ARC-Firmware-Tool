@@ -52,6 +52,8 @@ namespace ARC_Firmware_Tool
             menuStrip1 = new MenuStrip();
             aboutToolStripMenuItem = new ToolStripMenuItem();
             updateToolStripMenuItem = new ToolStripMenuItem();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            saveTextToolStripMenuItem = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -78,9 +80,9 @@ namespace ARC_Firmware_Tool
             label3.AutoSize = true;
             label3.Location = new Point(12, 244);
             label3.Name = "label3";
-            label3.Size = new Size(84, 25);
+            label3.Size = new Size(144, 25);
             label3.TabIndex = 2;
-            label3.Text = "FW Data:";
+            label3.Text = "FW Data/Config:";
             // 
             // label5
             // 
@@ -172,28 +174,28 @@ namespace ARC_Firmware_Tool
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(144, 45);
+            textBox1.Location = new Point(164, 45);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(539, 31);
             textBox1.TabIndex = 21;
             // 
             // textBox2
             // 
-            textBox2.Location = new Point(144, 108);
+            textBox2.Location = new Point(164, 108);
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(539, 31);
             textBox2.TabIndex = 22;
             // 
             // textBox3
             // 
-            textBox3.Location = new Point(144, 178);
+            textBox3.Location = new Point(164, 178);
             textBox3.Name = "textBox3";
             textBox3.Size = new Size(539, 31);
             textBox3.TabIndex = 23;
             // 
             // textBox4
             // 
-            textBox4.Location = new Point(144, 238);
+            textBox4.Location = new Point(164, 238);
             textBox4.Name = "textBox4";
             textBox4.Size = new Size(539, 31);
             textBox4.TabIndex = 24;
@@ -201,7 +203,7 @@ namespace ARC_Firmware_Tool
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem, updateToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem, updateToolStripMenuItem, fileToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(902, 33);
@@ -223,6 +225,19 @@ namespace ARC_Firmware_Tool
             updateToolStripMenuItem.Size = new Size(86, 29);
             updateToolStripMenuItem.Text = "Update";
             updateToolStripMenuItem.Click += updateToolStripMenuItem_Click;
+            // 
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(54, 29);
+            fileToolStripMenuItem.Text = "File";
+            // 
+            // saveTextToolStripMenuItem
+            // 
+            saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
+            saveTextToolStripMenuItem.Size = new Size(270, 34);
+            saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // Form1
             // 
@@ -280,5 +295,7 @@ namespace ARC_Firmware_Tool
         private MenuStrip menuStrip1;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem updateToolStripMenuItem;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem saveTextToolStripMenuItem;
     }
 }

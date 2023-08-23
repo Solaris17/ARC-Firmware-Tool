@@ -16,7 +16,8 @@ namespace ARC_Firmware_Tool
         private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
-        private string currentVersion = "1.0.7";
+        //private string currentVersion = "0.9.0";
+        private string currentVersion = "1.0.9";
 
         public Form1()
         {
@@ -24,6 +25,9 @@ namespace ARC_Firmware_Tool
 
             // About box event handler
             aboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
+
+            // Connect the saveTextToolStripMenuItem_Click event handler
+            saveTextToolStripMenuItem.Click += saveTextToolStripMenuItem_Click;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -92,9 +96,12 @@ namespace ARC_Firmware_Tool
 
         // Made this asyc so I can add more later.
         // Scan Hardware Button
-        public void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            Task.Run(async () =>
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            await Task.Run(async () =>
             {
                 // Read the resource files and copy them out.
                 System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
@@ -103,6 +110,8 @@ namespace ARC_Firmware_Tool
                 String file1 = "igsc.exe";
                 String file2 = "igsc.dll";
                 String outputPath = System.IO.Path.GetTempPath();
+                String executableFileName = "igsc.exe";
+                String executablePath = Path.Combine(outputPath, file1);
 
                 // First file.
                 using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
@@ -130,50 +139,12 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
-                using (Process process = new Process())
-                {
-                    process.StartInfo.FileName = System.IO.Path.Combine(outputPath, file1);
-                    process.StartInfo.Arguments = "list-devices -i";
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
+                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions.\n");
+                await RunProcessWithOutputAsync($"list-devices -i", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions.\n");
+                await RunProcessWithOutputAsync($"fw-data version", executableFileName, outputPath);
 
-                    process.OutputDataReceived += (s, evt) =>
-                    {
-                        if (!string.IsNullOrEmpty(evt.Data))
-                        {
-                            this.Invoke(new Action(() =>
-                            {
-                                richTextBox1.AppendText(evt.Data + Environment.NewLine);
-                            }));
-                        }
-                    };
-
-                    process.ErrorDataReceived += (s, evt) =>
-                    {
-                        if (!string.IsNullOrEmpty(evt.Data))
-                        {
-                            this.Invoke(new Action(() =>
-                            {
-                                richTextBox1.AppendText("Error: " + evt.Data + Environment.NewLine);
-                            }));
-                        }
-                    };
-
-                    process.EnableRaisingEvents = true;
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    await Task.Run(() =>
-                    {
-                        process.WaitForExit();
-                    });
-
-                    // more things
-                }
+                AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
         }
 
@@ -246,27 +217,33 @@ namespace ARC_Firmware_Tool
                 File.Copy(fdlg4, Path.Combine(outputPath, Path.GetFileName(fdlg4)), true);
             }
 
-            await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4);
+            await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
+
+            AppendTextToRichTextBox(richTextBox1, "Flashing complete.");
         }
 
-        private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4)
+        private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
         {
             // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty.
             // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
-                await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName);
-                await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName);
-                await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName);
-                await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName);
+                await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Data\n");
+                await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Code\n");
+                await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing FW Data\n");
+                await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName, outputPath);
+
             });
         }
 
-        private async Task RunProcessWithOutputAsync(string arguments, string executableFileName)
+        private async Task RunProcessWithOutputAsync(string arguments, string executableFileName, string outputPath)
         {
             using (Process process = new Process())
             {
-                process.StartInfo.FileName = System.IO.Path.GetTempPath() + executableFileName;
+                process.StartInfo.FileName = Path.Combine(outputPath, executableFileName);
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.UseShellExecute = false;
@@ -303,26 +280,20 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Helper method for richTextBox1
         private void AppendTextToRichTextBox(RichTextBox richTextBox, string text)
         {
             if (richTextBox.InvokeRequired)
             {
                 richTextBox.Invoke(new Action(() =>
                 {
-                    richTextBox.AppendText(text);
+                    richTextBox.AppendText(text + Environment.NewLine);
                 }));
             }
             else
             {
-                richTextBox.AppendText(text);
+                richTextBox.AppendText(text + Environment.NewLine);
             }
-        }
-
-
-        // Exit button
-        private void button2_Click(object sender, EventArgs e)
-        {
-            System.Windows.Forms.Application.Exit();
         }
 
         // About box
@@ -421,5 +392,31 @@ namespace ARC_Firmware_Tool
                 }
             }
         }
+
+        // Lets save the output
+        private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Get the text from the RichTextBox
+                string textToSave = richTextBox1.Text;
+
+                // Save the text to the selected file
+                File.WriteAllText(saveFileDialog.FileName, textToSave);
+
+                MessageBox.Show("Log saved to file.", "Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+
+        // Exit button
+        private void button2_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
+        }
+
     }
 }
