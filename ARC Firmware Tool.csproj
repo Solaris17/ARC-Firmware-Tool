@@ -13,9 +13,9 @@
     <Copyright>Solaris17 of TPU</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>preview</LangVersion>
-    <AssemblyVersion>1.0.9</AssemblyVersion>
-    <FileVersion>1.0.9</FileVersion>
-    <Version>1.0.9</Version>
+    <AssemblyVersion>1.1.0</AssemblyVersion>
+    <FileVersion>1.1.0</FileVersion>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,10 +67,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="pictures\" />
   </ItemGroup>
 
 </Project>
