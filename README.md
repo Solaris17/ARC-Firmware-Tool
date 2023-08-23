@@ -52,9 +52,9 @@ Versioning is done as follows:
 
 Major.Minor.Patch
 
-Major versions are based on generation. For example **1**.2.0 would be Intels first generation GPU; ARC.
+Major versions are based on generation. For example **<u>1</u>**.2.0 would be Intels first generation GPU; ARC.
 
-Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA. For example 1.**2**.0 would be a stable release.
+Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA. For example 1.**<u>2</u>**.0 would be a stable release.
 
 Patch versions are generally just that though a feature may sneak in; usually in BETA builds.
 
