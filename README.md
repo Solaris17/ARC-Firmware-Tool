@@ -26,3 +26,9 @@ Trademarks are property of their respective owners.
 
 ![](https://tdepix.io/pictures/mstsc_g9XP0U7geV.png)
 
+-----
+
+# Todo
+- Add pictures locally
+- Clarify flash field verbage
+- Create seperate page for documentation
