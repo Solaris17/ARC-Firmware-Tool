@@ -33,3 +33,4 @@ Trademarks are property of their respective owners.
 - Clarify flash field verbage
 - Create seperate page for documentation
 - Write flash progress to log file
+- Add config data subroutine
