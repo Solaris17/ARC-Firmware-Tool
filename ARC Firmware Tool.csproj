@@ -13,6 +13,9 @@
     <Copyright>Solaris17 of TPU</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>preview</LangVersion>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <FileVersion>1.2.0</FileVersion>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +36,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\igsc.dll" />
     <EmbeddedResource Include="Resources\igsc.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Octokit" Version="7.1.0" />
   </ItemGroup>
 
   <ItemGroup>

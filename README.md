@@ -20,9 +20,29 @@ https://github.com/intel/igsc
 
 Trademarks are property of their respective owners.
 
-![](https://tdepix.io/pictures/mstsc_6z96Kkg3NQ.png)
+## A few screenshots of the flash sequence as well as the save log function.
 
-![](https://tdepix.io/pictures/mstsc_O9lLzYO6No.png)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/main-window.png?raw=true)
 
-![](https://tdepix.io/pictures/mstsc_g9XP0U7geV.png)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/device-scan.png?raw=true)
 
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-start.png?raw=true)
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-prog.png?raw=true)
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/save-log.png?raw=true)
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/save-done.png?raw=true)
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-log.png?raw=true)
+
+## The software also has the ability to check for new versions in addition to an aboutbox with basic info.
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/update-check.png?raw=true)
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/about-box.png?raw=true)
+
+-----
+
+# Todo
+- Create seperate page for documentation

@@ -1,7 +1,7 @@
-using Microsoft.VisualBasic.ApplicationServices;
 using System.Diagnostics;
 using System.Text;
-using System.Windows.Forms;
+using Octokit;
+
 
 // I am so trash at C# please help
 
@@ -10,14 +10,24 @@ namespace ARC_Firmware_Tool
     public partial class Form1 : Form
     {
 
-        private object syncGate = new object();
-        private Process process;
-        private StringBuilder output = new StringBuilder();
-        private bool outputChanged;
+        private const string RepoOwner = "";
+        private const string RepoName = "ARC-Firmware-Tool";
+        // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
+        private const string PersonalAccessToken = "";
+        // Expire when?: Thu, Aug 22 2024
+        // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
+        //private string currentVersion = "0.9.0";
+        private string currentVersion = "1.2.0";
 
         public Form1()
         {
             InitializeComponent();
+
+            // About box event handler
+            aboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
+
+            // Connect the saveTextToolStripMenuItem_Click event handler
+            saveTextToolStripMenuItem.Click += saveTextToolStripMenuItem_Click;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -27,7 +37,7 @@ namespace ARC_Firmware_Tool
 
         // Buttons here
 
-        // Firmware Browse button
+        // Firmware Browse buttons
         private void button4_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg1 = new OpenFileDialog();
@@ -84,95 +94,58 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Made this asyc so I can add more later.
         // Scan Hardware Button
-        public void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
-            lock (syncGate)
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            await Task.Run(async () =>
             {
-                if (process != null) return;
-            }
+                // Read the resource files and copy them out.
+                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
-            output.Clear();
-            outputChanged = false;
-            richTextBox1.Text = "";
+                String myProject = "ARC_Firmware_Tool";
+                String file1 = "igsc.exe";
+                String file2 = "igsc.dll";
+                String outputPath = System.IO.Path.GetTempPath();
+                String executableFileName = "igsc.exe";
+                String executablePath = Path.Combine(outputPath, file1);
 
-            // Read the resource files and copy them out.
-            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-            String myProject = "ARC_Firmware_Tool";
-            String file1 = "igsc.exe";
-            String file2 = "igsc.dll";
-            String outputPath = System.IO.Path.GetTempPath();
-
-            // First file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                // First file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
                 {
-                    for (int i = 0; i < stream.Length; i++)
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
                     {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Next file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            process = new Process();
-            process.StartInfo.FileName = System.IO.Path.GetTempPath() + file1;
-            process.StartInfo.Arguments = "list-devices --info";
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.EnableRaisingEvents = true;
-            process.Start();
-
-            new Thread(ReadData1) { IsBackground = true }.Start();
-        }
-
-        private void ReadData1()
-        {
-            var input = process.StandardOutput;
-            int nextChar;
-            while ((nextChar = input.Read()) >= 0)
-            {
-                lock (syncGate)
-                {
-                    output.Append((char)nextChar);
-                    if (!outputChanged)
-                    {
-                        outputChanged = true;
-                        BeginInvoke(new Action(OnOutputChanged));
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
                     }
                 }
-            }
-            lock (syncGate)
-            {
-                process.Dispose();
-                process = null;
-            }
-        }
 
-        private void OnOutputChanged()
-        {
-            lock (syncGate)
-            {
-                richTextBox1.Text = output.ToString();
-                outputChanged = false;
-            }
+                // Next file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
+                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions.\n");
+                await RunProcessWithOutputAsync($"list-devices -i", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions.\n");
+                await RunProcessWithOutputAsync($"fw-data version", executableFileName, outputPath);
+
+                AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
+            });
         }
 
         // Try to refactor smarter
@@ -244,26 +217,33 @@ namespace ARC_Firmware_Tool
                 File.Copy(fdlg4, Path.Combine(outputPath, Path.GetFileName(fdlg4)), true);
             }
 
-            await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4);
+            await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
+
+            AppendTextToRichTextBox(richTextBox1, "Flashing complete.");
         }
 
-        private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4)
+        private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
         {
-            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty. Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
+            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty.
+            // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
-                await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName);
-                await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName);
-                await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName);
-                await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName);
+                await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Data\n");
+                await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Code\n");
+                await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Flashing FW Data\n");
+                await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName, outputPath);
+
             });
         }
 
-        private async Task RunProcessWithOutputAsync(string arguments, string executableFileName)
+        private async Task RunProcessWithOutputAsync(string arguments, string executableFileName, string outputPath)
         {
             using (Process process = new Process())
             {
-                process.StartInfo.FileName = System.IO.Path.GetTempPath() + executableFileName;
+                process.StartInfo.FileName = Path.Combine(outputPath, executableFileName);
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.UseShellExecute = false;
@@ -300,18 +280,134 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Helper method for richTextBox1
         private void AppendTextToRichTextBox(RichTextBox richTextBox, string text)
         {
             if (richTextBox.InvokeRequired)
             {
                 richTextBox.Invoke(new Action(() =>
                 {
-                    richTextBox.AppendText(text);
+                    richTextBox.AppendText(text + Environment.NewLine);
                 }));
             }
             else
             {
-                richTextBox.AppendText(text);
+                richTextBox.AppendText(text + Environment.NewLine);
+            }
+        }
+
+        // About box
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox1 a = new AboutBox1();
+            a.ShowDialog();
+        }
+
+        // Lets do a software update
+        // Do some version checks
+        // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+        private async void updateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                bool updateNeeded = await CheckAndUpdateVersionAsync();
+
+                if (updateNeeded)
+                {
+                    var saveFileDialog = new SaveFileDialog
+                    {
+                        FileName = "ARC Firmware Tool.exe",
+                        Filter = "Executable files (*.exe)|*.exe",
+                        Title = "Save Update File"
+                    };
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        await DownloadAndSaveUpdate(saveFileDialog.FileName);
+                        MessageBox.Show("Update downloaded! Please relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Your already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async Task<bool> CheckAndUpdateVersionAsync()
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                string latestVersion = latestRelease.TagName;
+
+                if (Version.TryParse(latestVersion, out Version latest) &&
+                    Version.TryParse(currentVersion, out Version current) &&
+                    latest > current)
+                {
+                    return true; // New version is needed
+                }
+            }
+            return false; // App is up to date
+        }
+
+        private async Task DownloadAndSaveUpdate(string savePath)
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                var asset = latestRelease.Assets.FirstOrDefault();
+                if (asset != null)
+                {
+                    string assetUrl = asset.BrowserDownloadUrl;
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetAsync(assetUrl);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
+                            {
+                                await stream.CopyToAsync(fileStream);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Lets save the output
+        private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Get the text from the RichTextBox
+                string textToSave = richTextBox1.Text;
+
+                // Save the text to the selected file
+                File.WriteAllText(saveFileDialog.FileName, textToSave);
+
+                MessageBox.Show("Log saved to file.", "Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -322,11 +418,5 @@ namespace ARC_Firmware_Tool
             System.Windows.Forms.Application.Exit();
         }
 
-        // Exit the about box
-        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-            AboutBox1 a = new AboutBox1();
-            a.Show();
-        }
     }
 }
