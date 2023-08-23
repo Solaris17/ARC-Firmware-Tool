@@ -32,3 +32,4 @@ Trademarks are property of their respective owners.
 - Add pictures locally
 - Clarify flash field verbage
 - Create seperate page for documentation
+- Write flash progress to log file
