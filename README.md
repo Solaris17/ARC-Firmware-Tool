@@ -48,13 +48,13 @@ Trademarks are property of their respective owners.
 
 ## Versioning
 
-Versioning is done as follows
+Versioning is done as follows:
 
 Major.Minor.Patch
 
-Major versions are based on generation. For example 1.2.0 would be Intels first generation GPU ARC
+Major versions are based on generation. For example **1**.2.0 would be Intels first generation GPU; ARC.
 
-Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA
+Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA. For example 1.**2**.0 would be a stable release.
 
 Patch versions are generally just that though a feature may sneak in; usually in BETA builds.
 
