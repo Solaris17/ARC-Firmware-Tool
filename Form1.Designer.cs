@@ -98,6 +98,7 @@ namespace ARC_Firmware_Tool
             // 
             // button1
             // 
+            button1.Anchor = AnchorStyles.Bottom;
             button1.Location = new Point(346, 394);
             button1.Name = "button1";
             button1.Size = new Size(210, 53);
@@ -108,6 +109,7 @@ namespace ARC_Firmware_Tool
             // 
             // button2
             // 
+            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             button2.Location = new Point(778, 730);
             button2.Name = "button2";
             button2.Size = new Size(112, 34);
@@ -118,6 +120,7 @@ namespace ARC_Firmware_Tool
             // 
             // button3
             // 
+            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             button3.Location = new Point(12, 730);
             button3.Name = "button3";
             button3.Size = new Size(112, 34);
@@ -128,6 +131,7 @@ namespace ARC_Firmware_Tool
             // 
             // richTextBox1
             // 
+            richTextBox1.Anchor = AnchorStyles.Bottom;
             richTextBox1.Location = new Point(130, 453);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
@@ -273,6 +277,9 @@ namespace ARC_Firmware_Tool
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoScroll = true;
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             ClientSize = new Size(902, 776);
             Controls.Add(button8);
             Controls.Add(textBox5);

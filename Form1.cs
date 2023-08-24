@@ -18,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.5.4";
+        private string currentVersion = "1.5.6";
 
         public Form1()
         {
@@ -241,6 +241,10 @@ namespace ARC_Firmware_Tool
         {
             // Begin flash process
 
+            // Disable buttons
+            button3.Enabled = false;
+            button2.Enabled = false;
+
             // Clear the RichTextBox
             richTextBox1.Clear();
 
@@ -307,6 +311,10 @@ namespace ARC_Firmware_Tool
             await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
             AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
+
+            // Re-Enable buttons
+            button3.Enabled = true;
+            button2.Enabled = true;
         }
 
         private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
@@ -499,6 +507,23 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Leave main form close enabled but ask.
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            if (e.CloseReason == CloseReason.WindowsShutDown) return;
+
+            // Confirm user wants to close
+            switch (MessageBox.Show(this, "Are you sure you want to close?", "Closing", MessageBoxButtons.YesNo))
+            {
+                case DialogResult.No:
+                    e.Cancel = true;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         // Exit button
         private void button2_Click(object sender, EventArgs e)

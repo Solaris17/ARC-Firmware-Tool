@@ -10,18 +10,12 @@ A GUI application for Intel ARC firmware flashing.
 
 [Take a look at the Flashing guide](docs/guide.md)
 
-Project was built using my modified version of Intel's IGSC:
+This tool allows the flashing and downgrading of firmware on Intel discrete graphics cards.
 
-https://github.com/Solaris17/igsc
-
-There original repo is located here: 
-
-https://github.com/intel/igsc
-
-Trademarks are property of their respective owners.
+## Features
 
 > [!NOTE]
-> A few screenshots of the flash sequence as well as the save log function.
+> A few screen shots of the flash sequence as well as the save log function.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/main-window.png?raw=true)
 
@@ -38,7 +32,7 @@ Trademarks are property of their respective owners.
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-log.png?raw=true)
 
 > [!NOTE]
-> The software also has the ability to check for new versions in addition to an aboutbox with basic info.
+> The software also has the ability to check for new versions in addition to an about-box with basic info.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/update-check.png?raw=true)
 
@@ -54,7 +48,7 @@ Versioning is done as follows:
 
 Major.Minor.Patch
 
-Major versions are based on generation. For example **_1_**.2.0 would be Intel's first generation GPU; Alchemist.
+Major versions are based on and upto the GPU generation. For example **_1_**.2.0 would be Intel's first generation GPU; Alchemist.
 
 Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA. For example 1.**_2_**.0 would be a stable release.
 
@@ -63,3 +57,19 @@ Patch versions are generally just that though a feature may sneak in; usually in
 -----
 
 # Todo
+
+
+
+-----
+
+# Information
+
+Project was built using my modified version of Intel's IGSC:
+
+https://github.com/Solaris17/igsc
+
+There original repo is located here: 
+
+https://github.com/intel/igsc
+
+Trademarks are property of their respective owners.
