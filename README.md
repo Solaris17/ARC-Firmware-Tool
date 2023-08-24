@@ -54,7 +54,7 @@ Versioning is done as follows:
 
 Major.Minor.Patch
 
-Major versions are based on generation. For example **_1_**.2.0 would be Intel's first generation GPU; ARC.
+Major versions are based on generation. For example **_1_**.2.0 would be Intel's first generation GPU; Alchemist.
 
 Minor versions follow tick-tock policy. Even numbers are stable releases, odd numbers are BETA. For example 1.**_2_**.0 would be a stable release.
 
