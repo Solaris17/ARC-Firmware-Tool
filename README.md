@@ -20,7 +20,8 @@ https://github.com/intel/igsc
 
 Trademarks are property of their respective owners.
 
-### A few screenshots of the flash sequence as well as the save log function.
+> [!NOTE]
+> A few screenshots of the flash sequence as well as the save log function.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/main-window.png?raw=true)
 
@@ -36,7 +37,8 @@ Trademarks are property of their respective owners.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-log.png?raw=true)
 
-### The software also has the ability to check for new versions in addition to an aboutbox with basic info.
+> [!NOTE]
+> The software also has the ability to check for new versions in addition to an aboutbox with basic info.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/update-check.png?raw=true)
 
