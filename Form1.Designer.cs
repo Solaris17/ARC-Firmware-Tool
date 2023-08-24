@@ -54,6 +54,9 @@ namespace ARC_Firmware_Tool
             updateToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem = new ToolStripMenuItem();
             saveTextToolStripMenuItem = new ToolStripMenuItem();
+            textBox5 = new TextBox();
+            button9 = new Button();
+            button8 = new Button();
             menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -95,9 +98,10 @@ namespace ARC_Firmware_Tool
             // 
             // button1
             // 
-            button1.Location = new Point(346, 343);
+            button1.Anchor = AnchorStyles.Bottom;
+            button1.Location = new Point(346, 394);
             button1.Name = "button1";
-            button1.Size = new Size(210, 104);
+            button1.Size = new Size(210, 53);
             button1.TabIndex = 5;
             button1.Text = "Scan HW";
             button1.UseVisualStyleBackColor = true;
@@ -105,6 +109,7 @@ namespace ARC_Firmware_Tool
             // 
             // button2
             // 
+            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             button2.Location = new Point(778, 730);
             button2.Name = "button2";
             button2.Size = new Size(112, 34);
@@ -115,6 +120,7 @@ namespace ARC_Firmware_Tool
             // 
             // button3
             // 
+            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             button3.Location = new Point(12, 730);
             button3.Name = "button3";
             button3.Size = new Size(112, 34);
@@ -125,6 +131,7 @@ namespace ARC_Firmware_Tool
             // 
             // richTextBox1
             // 
+            richTextBox1.Anchor = AnchorStyles.Bottom;
             richTextBox1.Location = new Point(130, 453);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
@@ -239,11 +246,44 @@ namespace ARC_Firmware_Tool
             saveTextToolStripMenuItem.Size = new Size(186, 34);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
+            // textBox5
+            // 
+            textBox5.Location = new Point(164, 294);
+            textBox5.Name = "textBox5";
+            textBox5.Size = new Size(539, 31);
+            textBox5.TabIndex = 28;
+            // 
+            // button9
+            // 
+            button9.Location = new Point(12, 294);
+            button9.Name = "button9";
+            button9.Size = new Size(131, 34);
+            button9.TabIndex = 27;
+            button9.Text = "Check a file:";
+            button9.UseVisualStyleBackColor = true;
+            button9.Click += button9_Click;
+            // 
+            // button8
+            // 
+            button8.Location = new Point(778, 294);
+            button8.Name = "button8";
+            button8.Size = new Size(112, 34);
+            button8.TabIndex = 29;
+            button8.Text = "Browse";
+            button8.UseVisualStyleBackColor = true;
+            button8.Click += button8_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoScroll = true;
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             ClientSize = new Size(902, 776);
+            Controls.Add(button8);
+            Controls.Add(textBox5);
+            Controls.Add(button9);
             Controls.Add(textBox4);
             Controls.Add(textBox3);
             Controls.Add(textBox2);
@@ -263,6 +303,7 @@ namespace ARC_Firmware_Tool
             Controls.Add(menuStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
+            MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "ARC Firmware Tool";
@@ -287,10 +328,13 @@ namespace ARC_Firmware_Tool
         private Button button5;
         private Button button6;
         private Button button7;
+        private Button button8;
+        private Button button9;
         private TextBox textBox1;
         private TextBox textBox2;
         private TextBox textBox3;
         private TextBox textBox4;
+        private TextBox textBox5;
         private ToolTip toolTip1;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem aboutToolStripMenuItem;

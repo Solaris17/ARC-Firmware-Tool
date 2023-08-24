@@ -26,6 +26,9 @@ Oprom (*Data*): Oprom data. This will have a ```"_d_"``` in the title; like ```d
 
 Oprom (*Code*): Oprom code. This will have a ```"_c_"``` in the title; like ```dg2_c_oprom.rom```.
 
+> [!NOTE]
+> The Data and Code versions can differ, but they are often the same.
+
 FW Data / Config Data: 
  - FW data. This will have ```"_fwdata_"``` in the title; like ```dg2_fwdata_asrock770.bin```.
  - FW Config data. This will have ```"_config"``` in the title; like ```dg2_intel_a770_config-data.bin```.

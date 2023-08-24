@@ -18,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.4.0";
+        private string currentVersion = "1.6.1";
 
         public Form1()
         {
@@ -95,6 +95,91 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        private void button8_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fdlg5 = new OpenFileDialog();
+            fdlg5.Title = "Open File Dialog";
+            fdlg5.InitialDirectory = @"c:\";
+            fdlg5.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
+            fdlg5.FilterIndex = 2;
+            fdlg5.RestoreDirectory = true;
+            if (fdlg5.ShowDialog() == DialogResult.OK)
+            {
+                textBox5.Text = fdlg5.FileName;
+            }
+        }
+
+        // Check FW Button
+        private async void button9_Click(object sender, EventArgs e)
+        {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            // Display the introductory message before the process output
+            AppendTextToRichTextBox(richTextBox1, "Checking selected file...\n");
+
+            await Task.Run(async () =>
+            {
+                // Read the resource files and copy them out.
+                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+                String myProject = "ARC_Firmware_Tool";
+                String file1 = "igsc.exe";
+                String file2 = "igsc.dll";
+                String outputPath = System.IO.Path.GetTempPath();
+                String executablePath = Path.Combine(outputPath, file1);
+
+                // Create variables from other methods
+                string fdlg5 = textBox5.Text;
+
+                // First file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
+                // Next file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
+                // FW File Copies
+                if (!string.IsNullOrEmpty(fdlg5))
+                {
+                    File.Copy(fdlg5, Path.Combine(outputPath, Path.GetFileName(fdlg5)), true);
+                }
+
+                AppendTextToRichTextBox(richTextBox1, $"Checking file:\n \"{fdlg5}\"\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
+                await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Checking if FW...\n");
+                await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Data...\n");
+                await RunProcessWithOutputAsync($"oprom-data version -i \"{fdlg5}\"", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Code...\n");
+                await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
+                await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", file1, outputPath);
+
+                AppendTextToRichTextBox(richTextBox1, "Finished checking file!");
+            });
+        }
+
         // Made this asyc so I can add more later.
         // Scan Hardware Button
         private async void button1_Click(object sender, EventArgs e)
@@ -111,7 +196,6 @@ namespace ARC_Firmware_Tool
                 String file1 = "igsc.exe";
                 String file2 = "igsc.dll";
                 String outputPath = System.IO.Path.GetTempPath();
-                String executableFileName = "igsc.exe";
                 String executablePath = Path.Combine(outputPath, file1);
 
                 // First file.
@@ -141,27 +225,31 @@ namespace ARC_Firmware_Tool
                 }
 
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
-                await RunProcessWithOutputAsync($"list-devices -i", executableFileName, outputPath);
+                await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
-                await RunProcessWithOutputAsync($"fw hwconfig", executableFileName, outputPath);
+                await RunProcessWithOutputAsync($"fw hwconfig", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
-                await RunProcessWithOutputAsync($"fw-data version", executableFileName, outputPath);
+                await RunProcessWithOutputAsync($"fw-data version", file1, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
         }
 
-        // Try to refactor smarter
+        // Try to re-factor smarter
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
         {
             // Begin flash process
 
+            // Disable buttons
+            button3.Enabled = false;
+            button2.Enabled = false;
+
             // Clear the RichTextBox
             richTextBox1.Clear();
 
             // Display the introductory message before the process output
-            AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n\n");
+            AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n");
 
             // Read the resource files and copy them out.
             System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
@@ -223,6 +311,10 @@ namespace ARC_Firmware_Tool
             await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
             AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
+
+            // Re-Enable buttons
+            button3.Enabled = true;
+            button2.Enabled = true;
         }
 
         private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
@@ -231,12 +323,13 @@ namespace ARC_Firmware_Tool
             // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
+                AppendTextToRichTextBox(richTextBox1, $"Flashing FW File:\n \"{fdlg1}\"\n");
                 await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Data:\n");
+                AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Data File:\n \"{fdlg2}\"\n");
                 await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Code:\n");
+                AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Code File:\n \"{fdlg3}\"\n");
                 await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing FW Data:\n");
+                AppendTextToRichTextBox(richTextBox1, $"Flashing FW Data File:\n \"{fdlg4}\"\n");
                 await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName, outputPath);
 
             });
@@ -414,12 +507,28 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Leave main form close enabled but ask.
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            if (e.CloseReason == CloseReason.WindowsShutDown) return;
+
+            // Confirm user wants to close
+            switch (MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo))
+            {
+                case DialogResult.No:
+                    e.Cancel = true;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         // Exit button
         private void button2_Click(object sender, EventArgs e)
         {
             System.Windows.Forms.Application.Exit();
         }
-
     }
 }
