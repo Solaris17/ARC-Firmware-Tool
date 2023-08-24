@@ -54,6 +54,10 @@ Minor versions follow tick-tock policy. Even numbers are stable releases, odd nu
 
 Patch versions are generally just that though a feature may sneak in; usually in BETA builds.
 
+## Requests and ideas
+
+[Feel free to let me know what you think!](docs/requests.md)
+
 -----
 
 # Todo
