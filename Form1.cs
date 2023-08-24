@@ -18,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.6.1";
+        private string currentVersion = "1.7.0";
 
         public Form1()
         {
@@ -420,7 +420,7 @@ namespace ARC_Firmware_Tool
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         await DownloadAndSaveUpdate(saveFileDialog.FileName);
-                        MessageBox.Show("Update downloaded! Please relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
                 else
