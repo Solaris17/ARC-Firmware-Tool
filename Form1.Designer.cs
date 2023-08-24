@@ -265,7 +265,7 @@ namespace ARC_Firmware_Tool
             MainMenuStrip = menuStrip1;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool (BETA)";
+            Text = "ARC Firmware Tool";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();

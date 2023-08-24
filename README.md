@@ -63,4 +63,3 @@ Patch versions are generally just that though a feature may sneak in; usually in
 -----
 
 # Todo
-- Create separate page for documentation
