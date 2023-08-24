@@ -18,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.5.6";
+        private string currentVersion = "1.6.1";
 
         public Form1()
         {

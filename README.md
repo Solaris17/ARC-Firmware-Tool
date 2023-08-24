@@ -17,26 +17,20 @@ This tool allows the flashing and downgrading of firmware on Intel discrete grap
 > [!NOTE]
 > A few screen shots of the flash sequence as well as the save log function.
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/main-window.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Scanning.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/device-scan.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Checking.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-start.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Flashing.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-prog.png?raw=true)
-
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/save-log.png?raw=true)
-
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/save-done.png?raw=true)
-
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-log.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Log-save.gif?raw=true)
 
 > [!NOTE]
 > The software also has the ability to check for new versions in addition to an about-box with basic info.
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/update-check.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Update.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/about-box.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/About.png?raw=true)
 
 -----
 
@@ -61,7 +55,7 @@ Patch versions are generally just that though a feature may sneak in; usually in
 -----
 
 # Todo
-
+- Make it pretty someday
 
 
 -----
