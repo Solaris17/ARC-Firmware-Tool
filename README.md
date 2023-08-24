@@ -8,7 +8,7 @@
 
 A GUI application for Intel ARC firmware flashing.
 
-[Flashing guide provided at:](docs/guide.md)
+[Take a look at the Flashing guide](docs/guide.md)
 
 Project was built using my modified version of Intels IGSC:
 
