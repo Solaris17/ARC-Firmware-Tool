@@ -18,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.5.2";
+        private string currentVersion = "1.5.4";
 
         public Form1()
         {
@@ -165,6 +165,8 @@ namespace ARC_Firmware_Tool
                 }
 
                 AppendTextToRichTextBox(richTextBox1, $"Checking file:\n \"{fdlg5}\"\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
+                await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if FW...\n");
                 await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Data...\n");
@@ -173,10 +175,8 @@ namespace ARC_Firmware_Tool
                 await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
                 await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", file1, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
-                await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", file1, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Finished checking file");
+                AppendTextToRichTextBox(richTextBox1, "Finished checking file!");
             });
         }
 
