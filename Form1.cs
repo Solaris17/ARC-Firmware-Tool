@@ -10,6 +10,7 @@ namespace ARC_Firmware_Tool
     public partial class Form1 : Form
     {
 
+        // Lets do some git config
         private const string RepoOwner = "";
         private const string RepoName = "ARC-Firmware-Tool";
         // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
@@ -17,7 +18,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.2.0";
+        private string currentVersion = "1.4.0";
 
         public Form1()
         {
@@ -139,9 +140,11 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
-                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions.\n");
+                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
                 await RunProcessWithOutputAsync($"list-devices -i", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions.\n");
+                AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
+                await RunProcessWithOutputAsync($"fw hwconfig", executableFileName, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
                 await RunProcessWithOutputAsync($"fw-data version", executableFileName, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
@@ -219,7 +222,7 @@ namespace ARC_Firmware_Tool
 
             await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
-            AppendTextToRichTextBox(richTextBox1, "Flashing complete.");
+            AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
         }
 
         private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
@@ -229,11 +232,11 @@ namespace ARC_Firmware_Tool
             await Task.Run(async () =>
             {
                 await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Data\n");
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Data:\n");
                 await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Code\n");
+                AppendTextToRichTextBox(richTextBox1, "Flashing Oprom Code:\n");
                 await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Flashing FW Data\n");
+                AppendTextToRichTextBox(richTextBox1, "Flashing FW Data:\n");
                 await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName, outputPath);
 
             });
@@ -393,7 +396,7 @@ namespace ARC_Firmware_Tool
             }
         }
 
-        // Lets save the output
+        // Lets save the output from the textbox
         private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
