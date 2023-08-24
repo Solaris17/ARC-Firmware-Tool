@@ -1,4 +1,5 @@
 # Flash Guide
+[Home](https://github.com/Solaris17/ARC-Firmware-Tool)
 
 ## Getting Started
 
