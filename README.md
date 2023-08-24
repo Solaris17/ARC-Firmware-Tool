@@ -1,14 +1,14 @@
 # ARC Firmware Tool
 
+## Stats
+
+[![Github All Releases](https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total.svg)]()
+
+## About
+
 A GUI application for Intel ARC firmware flashing.
 
-Flashing guide provided at:
-
-https://www.techpowerup.com/forums/threads/guide-flashing-intel-arc-gpus.311964/
-
-Intel ARC FW Matrix located here:
-
-https://www.techpowerup.com/forums/threads/intel-arc-firmware-compilation-matrix.312440/
+[Flashing guide provided at:](docs/guide.md)
 
 Project was built using my modified version of Intels IGSC:
 
@@ -20,7 +20,7 @@ https://github.com/intel/igsc
 
 Trademarks are property of their respective owners.
 
-## A few screenshots of the flash sequence as well as the save log function.
+### A few screenshots of the flash sequence as well as the save log function.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/main-window.png?raw=true)
 
@@ -36,7 +36,7 @@ Trademarks are property of their respective owners.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/flash-log.png?raw=true)
 
-## The software also has the ability to check for new versions in addition to an aboutbox with basic info.
+### The software also has the ability to check for new versions in addition to an aboutbox with basic info.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/beta/pictures/update-check.png?raw=true)
 
