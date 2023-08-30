@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Text;
 using Octokit;
-
+using System.Net.Http;
+using System.IO;
+using System.Windows.Forms;
 
 // I am so trash at C# please help
 
@@ -18,7 +20,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.7.0";
+        private string currentVersion = "1.7.3";
 
         public Form1()
         {
@@ -29,6 +31,9 @@ namespace ARC_Firmware_Tool
 
             // Connect the saveTextToolStripMenuItem_Click event handler
             saveTextToolStripMenuItem.Click += saveTextToolStripMenuItem_Click;
+
+            // Connect the downloadLatestToolStripMenuItem_Click event handler
+            downloadLatestToolStripMenuItem.Click += downloadLatestToolStripMenuItem_Click;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -397,6 +402,47 @@ namespace ARC_Firmware_Tool
         {
             AboutBox1 a = new AboutBox1();
             a.ShowDialog();
+        }
+
+        // Lets get the latest BIOS'
+        private async void downloadLatestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (HttpClient httpClient = new HttpClient())
+            {
+                try
+                {
+                    string url = "https://teamdotexe.org/downloads/Intel-FW/Latest/Latest.zip";  // Set file url
+
+                    HttpResponseMessage response = await httpClient.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        SaveFileDialog saveFileDialog = new SaveFileDialog();
+                        saveFileDialog.FileName = "Latest_Intel_BIOS.zip";  // Set the default file name and extension
+                        saveFileDialog.Filter = "Zip Files (*.zip)|*.zip|All Files (*.*)|*.*"; // Set the default file extension filter
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            string filePath = saveFileDialog.FileName;
+
+                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            using (var fileStream = new FileStream(filePath, System.IO.FileMode.Create))  // Specify System.IO.FileMode or it gets mad about my other filepath call
+                            {
+                                await stream.CopyToAsync(fileStream);
+                            }
+
+                            MessageBox.Show("File downloaded successfully!");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error downloading the file.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred: " + ex.Message);
+                }
+            }
         }
 
         // Lets do a software update

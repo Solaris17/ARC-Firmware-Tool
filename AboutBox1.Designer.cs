@@ -148,12 +148,12 @@
             ClientSize = new Size(725, 544);
             Controls.Add(tableLayoutPanel);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(5, 6, 5, 6);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "AboutBox1";
             Padding = new Padding(15, 17, 15, 17);
-            ShowIcon = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
             Text = "AboutBox1";
