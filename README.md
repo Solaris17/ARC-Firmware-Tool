@@ -30,7 +30,7 @@ This tool allows the flashing and downgrading of firmware on Intel discrete grap
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Update.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Bios-Download.png?raw=true)
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Bios-Download.gif?raw=true)
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/About.png?raw=true)
 
