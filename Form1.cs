@@ -1,9 +1,6 @@
 using System.Diagnostics;
 using System.Text;
 using Octokit;
-using System.Net.Http;
-using System.IO;
-using System.Windows.Forms;
 
 // I am so trash at C# please help
 
@@ -20,7 +17,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.7.3";
+        private string currentVersion = "1.8.2";
 
         public Form1()
         {
@@ -29,10 +26,10 @@ namespace ARC_Firmware_Tool
             // About box event handler
             aboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
 
-            // Connect the saveTextToolStripMenuItem_Click event handler
+            // Save log handler
             saveTextToolStripMenuItem.Click += saveTextToolStripMenuItem_Click;
 
-            // Connect the downloadLatestToolStripMenuItem_Click event handler
+            // download vbios handler
             downloadLatestToolStripMenuItem.Click += downloadLatestToolStripMenuItem_Click;
         }
 
@@ -192,6 +189,11 @@ namespace ARC_Firmware_Tool
             // Clear the RichTextBox
             richTextBox1.Clear();
 
+            // Stamp date
+            DateTime currentDateTime = DateTime.Now;
+            string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
+            AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
+
             await Task.Run(async () =>
             {
                 // Read the resource files and copy them out.
@@ -254,6 +256,9 @@ namespace ARC_Firmware_Tool
             richTextBox1.Clear();
 
             // Display the introductory message before the process output
+            DateTime currentDateTime = DateTime.Now;
+            string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
+            AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
             AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n");
 
             // Read the resource files and copy them out.
@@ -430,7 +435,7 @@ namespace ARC_Firmware_Tool
                                 await stream.CopyToAsync(fileStream);
                             }
 
-                            MessageBox.Show("File downloaded successfully!");
+                            MessageBox.Show("Files downloaded successfully!");
                         }
                     }
                     else
@@ -471,7 +476,7 @@ namespace ARC_Firmware_Tool
                 }
                 else
                 {
-                    MessageBox.Show("Your already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)

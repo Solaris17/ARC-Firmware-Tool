@@ -244,14 +244,14 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(270, 34);
+            saveTextToolStripMenuItem.Size = new Size(243, 34);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // downloadLatestToolStripMenuItem
             // 
             downloadLatestToolStripMenuItem.Name = "downloadLatestToolStripMenuItem";
-            downloadLatestToolStripMenuItem.Size = new Size(270, 34);
-            downloadLatestToolStripMenuItem.Text = "Download Bios";
+            downloadLatestToolStripMenuItem.Size = new Size(243, 34);
+            downloadLatestToolStripMenuItem.Text = "Download vBios";
             // 
             // textBox5
             // 
@@ -313,7 +313,7 @@ namespace ARC_Firmware_Tool
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool (BETA)";
+            Text = "ARC Firmware Tool";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
