@@ -59,7 +59,6 @@ Patch versions are generally just that though a feature may sneak in; usually in
 # Todo
 - Make it pretty someday
 - Streamline docs
-- Add latest BIOS download?
 
 
 -----
