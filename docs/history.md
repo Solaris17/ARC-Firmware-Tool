@@ -1,4 +1,5 @@
 # How it all started
+[Home](https://github.com/Solaris17/ARC-Firmware-Tool)
 
 ## TL;DR
 
