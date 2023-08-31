@@ -445,7 +445,7 @@ namespace ARC_Firmware_Tool
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occurred: " + ex.Message);
+                    MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Download Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -481,7 +481,7 @@ namespace ARC_Firmware_Tool
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

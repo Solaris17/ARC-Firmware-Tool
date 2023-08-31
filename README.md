@@ -6,16 +6,18 @@
 
 ## About
 
-A GUI application for Intel ARC firmware flashing.
+A GUI application for Intel ARC firmware flashing!
 
 [Take a look at the Flashing guide](docs/guide.md)
 
 This tool allows the flashing and downgrading of firmware on Intel discrete graphics cards.
 
-## Features
+-----
+
+## Utility
 
 > [!NOTE]
-> A few screen shots of the flash sequence as well as the save log function.
+> A few screen shots including the flash sequence as well as the save log function.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Scanning.gif?raw=true)
 
@@ -24,6 +26,8 @@ This tool allows the flashing and downgrading of firmware on Intel discrete grap
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Flashing.gif?raw=true)
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Log-save.gif?raw=true)
+
+## Features
 
 > [!NOTE]
 > This software also has the ability to check for new versions and the ability to download the latest vbios's in addition to an about-box with basic info.
@@ -60,17 +64,8 @@ Patch versions are generally just that though a feature may sneak in; usually in
 - Make it pretty someday
 - Streamline docs
 
-
 -----
 
 # Information
 
-Project was built using my modified version of Intel's IGSC:
-
-https://github.com/Solaris17/igsc
-
-There original repo is located here: 
-
-https://github.com/intel/igsc
-
-Trademarks are property of their respective owners.
+[How it all started](docs/history.md)
