@@ -1,8 +1,10 @@
-# ARC Firmware Tool
+<h1 align="center">ARC Firmware Tool</h1>
 
 ## Stats
 
-![GitHub all releases](https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads&link=https%3A%2F%2Fgithub.com%2FSolaris17%2FARC-Firmware-Tool%2Freleases)
+<p align="center">
+<a href="https://github.com/Solaris17/ARC-Firmware-Tool/releases"><img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads"></a>
+</p>
 
 ## About
 
