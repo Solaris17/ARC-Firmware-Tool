@@ -2,7 +2,7 @@
 
 ## Stats
 
-![Github All Releases](https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads)
+![GitHub all releases](https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads&link=https%3A%2F%2Fgithub.com%2FSolaris17%2FARC-Firmware-Tool%2Freleases)
 
 ## About
 
