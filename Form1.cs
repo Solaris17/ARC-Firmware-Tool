@@ -17,7 +17,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.9.0";
+        private string currentVersion = "1.9.1";
 
         public Form1()
         {
@@ -576,9 +576,45 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Lets cleanup before we exit, I was trying to only do .bin and .rom containing "dg" in the name, but people can name them w/e they want.
+        // I guess I could try and create a folder that puts everything we use in it. I will make the bad assumption that its temp and it should be safe. (Other things might use .bin and .rom here)
+        // Method supporting the delete file operation for cleanups on exit.
+        private void DeleteFileOrFilesByPattern(string directoryPath, string pattern)
+        {
+            if (pattern.StartsWith("."))
+            {
+                // Delete files by extension
+                string[] filesToDelete = Directory.GetFiles(directoryPath, $"*{pattern}");
+                foreach (string file in filesToDelete)
+                {
+                    File.Delete(file);
+                }
+            }
+            else
+            {
+                // Delete a specific file by name
+                string filePath = Path.Combine(directoryPath, pattern);
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+        }
+
         // Exit button
         private void button2_Click(object sender, EventArgs e)
         {
+            string outputPath = Path.GetTempPath();
+
+            // Define the file extensions and specific file names to delete
+            string[] extensionsAndFilesToDelete = { ".bin", ".rom", "igsc.dll", "igsc.exe" }; // You can also add specific files here.
+
+            // Delete files by extension and specific files
+            foreach (string itemToDelete in extensionsAndFilesToDelete)
+            {
+                DeleteFileOrFilesByPattern(outputPath, itemToDelete);
+            }
+
             System.Windows.Forms.Application.Exit();
         }
     }
