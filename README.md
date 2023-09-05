@@ -14,7 +14,7 @@ A GUI application for Intel ARC firmware flashing!
 
 This tool allows the flashing and downgrading of firmware on Intel discrete graphics cards.
 
-Looking for fancy maybe broken features? Check out the ![beta branch](https://github.com/Solaris17/ARC-Firmware-Tool/tree/beta).
+Looking for fancy maybe broken features? Check out the [beta branch](https://github.com/Solaris17/ARC-Firmware-Tool/tree/beta).
 
 -----
 
