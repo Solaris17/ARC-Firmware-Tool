@@ -3,7 +3,6 @@ using System.Text;
 using Octokit;
 using HtmlAgilityPack;
 using System.Net;
-using System.Xml.Linq;
 
 // I am so trash at C# please help
 
@@ -20,7 +19,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.10.0";
+        private string currentVersion = "1.11.0";
 
         public Form1()
         {

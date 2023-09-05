@@ -245,19 +245,19 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(270, 34);
+            saveTextToolStripMenuItem.Size = new Size(248, 34);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // downloadLatestToolStripMenuItem
             // 
             downloadLatestToolStripMenuItem.Name = "downloadLatestToolStripMenuItem";
-            downloadLatestToolStripMenuItem.Size = new Size(270, 34);
+            downloadLatestToolStripMenuItem.Size = new Size(248, 34);
             downloadLatestToolStripMenuItem.Text = "Download vBios";
             // 
             // downloadDriverToolStripMenuItem
             // 
             downloadDriverToolStripMenuItem.Name = "downloadDriverToolStripMenuItem";
-            downloadDriverToolStripMenuItem.Size = new Size(270, 34);
+            downloadDriverToolStripMenuItem.Size = new Size(248, 34);
             downloadDriverToolStripMenuItem.Text = "Download Driver";
             downloadDriverToolStripMenuItem.Click += downloadDriverToolStripMenuItem_Click;
             // 
@@ -321,7 +321,7 @@ namespace ARC_Firmware_Tool
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool";
+            Text = "ARC Firmware Tool (BETA)";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
