@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using System.Text;
 using Octokit;
+using HtmlAgilityPack;
+using System.Net;
+using System.Xml.Linq;
 
 // I am so trash at C# please help
 
@@ -17,7 +20,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.9.2";
+        private string currentVersion = "1.10.0";
 
         public Form1()
         {
@@ -450,6 +453,82 @@ namespace ARC_Firmware_Tool
             }
         }
 
+        // Let's download the latest driver
+        private async void downloadDriverToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Load the main URL
+            HtmlWeb web = new HtmlWeb();
+            HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+
+            // Find the URL of the file you want to download we need to use the class names (inspect the page) to see what its serving us
+            var downloadButton = document.DocumentNode.SelectSingleNode("//button[@class='dc-page-available-downloads-hero-button__cta dc-page-available-downloads-hero-button_cta available-download-button__cta']");
+            string downloadUrl = downloadButton.GetAttributeValue("data-href", "");
+
+            // Extract the file name from the second <span> element because sometimes download buttons contain multiple spans
+            var fileNameElement = downloadButton.SelectNodes(".//span[@class='dc-page-available-downloads-hero-button_cta__label']");
+            string fileName = fileNameElement[1].InnerText.Trim(); // Use [1] to select the second <span> element (it usually starts at 0)
+
+            if (!string.IsNullOrEmpty(downloadUrl))
+            {
+                // Prompt the user for a save location
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
+                saveFileDialog.FileName = fileName; // Use the extracted file name we pulled out of the<span>
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string savePath = saveFileDialog.FileName;
+
+                    // Use Task.Run to run the download operation on a separate thread (or we will lock the UI)
+                    await Task.Run(() =>
+                    {
+                        using (WebClient client = new WebClient())
+                        {
+                            // Handle the DownloadProgressChanged event to update the download status
+                            client.DownloadProgressChanged += (sender, args) =>
+                            {
+                                // Update the progress text in richTextBox1 with the progress percentage
+                                int progressPercentage = args.ProgressPercentage;
+                                string progressText = $"Downloading: {progressPercentage}%";
+
+                                // Use BeginInvoke to update the UI control from the background thread
+                                richTextBox1.BeginInvoke(new Action(() =>
+                                {
+                                    // Set the text to the latest progress text (so we don't append like 5 million lines to console)
+                                    richTextBox1.Text = progressText;
+                                }));
+                            };
+
+                            try
+                            {
+                                // Download the file async so we dont lock primary thread
+                                client.DownloadFileAsync(new Uri(downloadUrl), savePath);
+
+                                // Display message to indicate that the download has started
+                                MessageBox.Show("Download started.");
+
+                                // Handle the DownloadFileCompleted event to show "Download completed" message or else it will pop up after hitting ok even if the stream hasnt ended
+                                client.DownloadFileCompleted += (sender, args) =>
+                                {
+                                    MessageBox.Show("Download completed.");
+                                };
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error downloading file: " + ex.Message);
+                            }
+                        }
+                    });
+                }
+            }
+            else
+            {
+                MessageBox.Show("Could not parse download.");
+            }
+
+            // I literally can't believe I got this to work.
+        }
+
         // Lets do a software update
         // Do some version checks
         // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
@@ -546,7 +625,7 @@ namespace ARC_Firmware_Tool
             // Append time
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("MM-dd-yyyy");
-            
+
             // Do file save
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.FileName = $"ARC Flash log " + formattedDateTime;  // Set the default file name and extension

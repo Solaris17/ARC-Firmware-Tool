@@ -55,6 +55,7 @@ namespace ARC_Firmware_Tool
             fileToolStripMenuItem = new ToolStripMenuItem();
             saveTextToolStripMenuItem = new ToolStripMenuItem();
             downloadLatestToolStripMenuItem = new ToolStripMenuItem();
+            downloadDriverToolStripMenuItem = new ToolStripMenuItem();
             textBox5 = new TextBox();
             button9 = new Button();
             button8 = new Button();
@@ -236,7 +237,7 @@ namespace ARC_Firmware_Tool
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, downloadLatestToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, downloadLatestToolStripMenuItem, downloadDriverToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(54, 29);
             fileToolStripMenuItem.Text = "File";
@@ -244,14 +245,21 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(243, 34);
+            saveTextToolStripMenuItem.Size = new Size(270, 34);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // downloadLatestToolStripMenuItem
             // 
             downloadLatestToolStripMenuItem.Name = "downloadLatestToolStripMenuItem";
-            downloadLatestToolStripMenuItem.Size = new Size(243, 34);
+            downloadLatestToolStripMenuItem.Size = new Size(270, 34);
             downloadLatestToolStripMenuItem.Text = "Download vBios";
+            // 
+            // downloadDriverToolStripMenuItem
+            // 
+            downloadDriverToolStripMenuItem.Name = "downloadDriverToolStripMenuItem";
+            downloadDriverToolStripMenuItem.Size = new Size(270, 34);
+            downloadDriverToolStripMenuItem.Text = "Download Driver";
+            downloadDriverToolStripMenuItem.Click += downloadDriverToolStripMenuItem_Click;
             // 
             // textBox5
             // 
@@ -313,7 +321,7 @@ namespace ARC_Firmware_Tool
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool (BETA)";
+            Text = "ARC Firmware Tool";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
@@ -350,5 +358,6 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem saveTextToolStripMenuItem;
         private ToolStripMenuItem downloadLatestToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem downloadDriverToolStripMenuItem;
     }
 }
