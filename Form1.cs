@@ -17,7 +17,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.9.1";
+        private string currentVersion = "1.9.2";
 
         public Form1()
         {
@@ -543,7 +543,13 @@ namespace ARC_Firmware_Tool
         // Lets save the output from the textbox
         private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Append time
+            DateTime currentDateTime = DateTime.Now;
+            string formattedDateTime = currentDateTime.ToString("MM-dd-yyyy");
+            
+            // Do file save
             SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = $"ARC Flash log " + formattedDateTime;  // Set the default file name and extension
             saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
