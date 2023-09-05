@@ -1,21 +1,27 @@
-# ARC Firmware Tool
+<h1 align="center">ARC Firmware Tool</h1>
 
 ## Stats
 
-[![Github All Releases](https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total.svg)]()
+<p align="center">
+<a href="https://github.com/Solaris17/ARC-Firmware-Tool/releases"><img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads"></a>
+</p>
 
 ## About
 
-A GUI application for Intel ARC firmware flashing.
+A GUI application for Intel ARC firmware flashing!
 
 [Take a look at the Flashing guide](docs/guide.md)
 
 This tool allows the flashing and downgrading of firmware on Intel discrete graphics cards.
 
-## Features
+Looking for fancy maybe broken features? Check out the [beta branch](https://github.com/Solaris17/ARC-Firmware-Tool/tree/beta).
+
+-----
+
+## Utility
 
 > [!NOTE]
-> A few screen shots of the flash sequence as well as the save log function.
+> A few screen shots including the flash sequence as well as the save log function.
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Scanning.gif?raw=true)
 
@@ -24,6 +30,8 @@ This tool allows the flashing and downgrading of firmware on Intel discrete grap
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Flashing.gif?raw=true)
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Log-save.gif?raw=true)
+
+## Features
 
 > [!NOTE]
 > This software also has the ability to check for new versions and the ability to download the latest vbios's in addition to an about-box with basic info.
@@ -59,19 +67,9 @@ Patch versions are generally just that though a feature may sneak in; usually in
 # Todo
 - Make it pretty someday
 - Streamline docs
-- Add latest BIOS download?
-
 
 -----
 
 # Information
 
-Project was built using my modified version of Intel's IGSC:
-
-https://github.com/Solaris17/igsc
-
-There original repo is located here: 
-
-https://github.com/intel/igsc
-
-Trademarks are property of their respective owners.
+[How it all started](docs/history.md)
