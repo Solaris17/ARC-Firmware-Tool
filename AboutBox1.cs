@@ -103,7 +103,7 @@ namespace ARC_Firmware_Tool
 
         private void textBoxDescription_TextChanged(object sender, EventArgs e)
         {
-            textBoxDescription.Text = "A GUI application for Intel ARC firmware flashing.\r\n\r\nFlash guide provided at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/guide-flashing-intel-arc-gpus.311964/\r\n\r\nFirmware matrix located at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/intel-arc-firmware-compilation-matrix.312440/";
+            textBoxDescription.Text = "A GUI application for Intel ARC firmware flashing.\r\n\r\nFlash guide provided at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/guide-flashing-intel-arc-gpus.311964/\r\n\r\nFirmware matrix located at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/intel-arc-firmware-compilation-matrix.312440/\r\n\r\nFor project updates please visit:\r\n\r\nhttps://github.com/Solaris17/ARC-Firmware-Tool";
         }
 
         private void okButton_Click(object sender, EventArgs e)
