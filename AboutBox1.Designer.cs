@@ -33,8 +33,8 @@
             labelProductName = new Label();
             labelVersion = new Label();
             labelCopyright = new Label();
-            textBoxDescription = new TextBox();
             okButton = new Button();
+            richTextBox1 = new RichTextBox();
             tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
             SuspendLayout();
@@ -48,8 +48,8 @@
             tableLayoutPanel.Controls.Add(labelProductName, 1, 0);
             tableLayoutPanel.Controls.Add(labelVersion, 1, 1);
             tableLayoutPanel.Controls.Add(labelCopyright, 1, 2);
-            tableLayoutPanel.Controls.Add(textBoxDescription, 1, 4);
             tableLayoutPanel.Controls.Add(okButton, 1, 5);
+            tableLayoutPanel.Controls.Add(richTextBox1, 1, 4);
             tableLayoutPanel.Dock = DockStyle.Fill;
             tableLayoutPanel.Location = new Point(15, 17);
             tableLayoutPanel.Margin = new Padding(5, 6, 5, 6);
@@ -113,21 +113,6 @@
             labelCopyright.Text = "By: Solaris17 of Techpowerup!";
             labelCopyright.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // textBoxDescription
-            // 
-            textBoxDescription.Dock = DockStyle.Fill;
-            textBoxDescription.Location = new Point(239, 210);
-            textBoxDescription.Margin = new Padding(10, 6, 5, 6);
-            textBoxDescription.Multiline = true;
-            textBoxDescription.Name = "textBoxDescription";
-            textBoxDescription.ReadOnly = true;
-            textBoxDescription.ScrollBars = ScrollBars.Both;
-            textBoxDescription.Size = new Size(451, 243);
-            textBoxDescription.TabIndex = 23;
-            textBoxDescription.TabStop = false;
-            textBoxDescription.Text = "A GUI application for Intel ARC firmware flashing.\r\n\r\nMore information provided at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/guide-flashing-intel-arc-gpus.311964/";
-            textBoxDescription.TextChanged += textBoxDescription_TextChanged;
-            // 
             // okButton
             // 
             okButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -139,6 +124,16 @@
             okButton.TabIndex = 24;
             okButton.Text = "&OK";
             okButton.Click += okButton_Click;
+            // 
+            // richTextBox1
+            // 
+            richTextBox1.Location = new Point(232, 207);
+            richTextBox1.Name = "richTextBox1";
+            richTextBox1.ReadOnly = true;
+            richTextBox1.Size = new Size(460, 249);
+            richTextBox1.TabIndex = 25;
+            richTextBox1.Text = resources.GetString("richTextBox1.Text");
+            richTextBox1.LinkClicked += richTextBox1_LinkClicked;
             // 
             // AboutBox1
             // 
@@ -158,7 +153,6 @@
             StartPosition = FormStartPosition.CenterParent;
             Text = "AboutBox1";
             tableLayoutPanel.ResumeLayout(false);
-            tableLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).EndInit();
             ResumeLayout(false);
         }
@@ -170,7 +164,7 @@
         private Label labelProductName;
         private Label labelVersion;
         private Label labelCopyright;
-        private TextBox textBoxDescription;
         private Button okButton;
+        private RichTextBox richTextBox1;
     }
 }

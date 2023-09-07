@@ -18,8 +18,8 @@ namespace ARC_Firmware_Tool
         private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
-        //private string currentVersion = "0.9.0";
-        private string currentVersion = "1.11.1";
+        //private readonly string currentVersion = "0.9.0";
+        private readonly string currentVersion = "1.12.0";
 
         public Form1()
         {

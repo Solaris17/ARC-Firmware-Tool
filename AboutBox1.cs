@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+
 
 namespace ARC_Firmware_Tool
 {
@@ -18,7 +13,6 @@ namespace ARC_Firmware_Tool
             this.labelProductName.Text = AssemblyProduct;
             this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
             this.labelCopyright.Text = AssemblyCopyright;
-            this.textBoxDescription.Text = AssemblyDescription;
         }
 
         #region Assembly Attribute Accessors
@@ -101,9 +95,34 @@ namespace ARC_Firmware_Tool
         }
         #endregion
 
-        private void textBoxDescription_TextChanged(object sender, EventArgs e)
+        // Rich text box inside the about box.
+        private void richTextBox1_LinkClicked(object sender, LinkClickedEventArgs e)
         {
-            textBoxDescription.Text = "A GUI application for Intel ARC firmware flashing.\r\n\r\nFlash guide provided at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/guide-flashing-intel-arc-gpus.311964/\r\n\r\nFirmware matrix located at:\r\n\r\nhttps://www.techpowerup.com/forums/threads/intel-arc-firmware-compilation-matrix.312440/\r\n\r\nFor project updates please visit:\r\n\r\nhttps://github.com/Solaris17/ARC-Firmware-Tool";
+            // Check if the link starts with a valid URL scheme (e.g., http:// or https://).
+            if (Uri.IsWellFormedUriString(e.LinkText, UriKind.Absolute))
+            {
+                // Create a ProcessStartInfo object to open the URL in the default web browser.
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = e.LinkText,
+                    UseShellExecute = true
+                };
+
+                try
+                {
+                    // Start the process.
+                    System.Diagnostics.Process.Start(psi);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error opening URL: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                // Handle the case where the link is not a valid URL because I'm dumb.
+                MessageBox.Show("Invalid URL: " + e.LinkText, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void okButton_Click(object sender, EventArgs e)
