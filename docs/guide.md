@@ -9,6 +9,7 @@ This comes with some caveats.
 
 + Windows auto install will not update the firmware.
 + Installing a new Intel GPU and using the previous installation will not update the firmware.
++ Installing previous drivers will not rollback firmware (Driver installs are upgrade only)
 + If the flash process times out during the driver install it will not attempt to install the firmware again.
 
 As you can see too much can be left up in the air. As development matures and driver release cycles slow down depending on how you maintain your system you may find yourself behind on firmware.
