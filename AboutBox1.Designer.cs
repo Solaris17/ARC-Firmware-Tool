@@ -51,8 +51,8 @@
             tableLayoutPanel.Controls.Add(okButton, 1, 5);
             tableLayoutPanel.Controls.Add(richTextBox1, 1, 4);
             tableLayoutPanel.Dock = DockStyle.Fill;
-            tableLayoutPanel.Location = new Point(15, 17);
-            tableLayoutPanel.Margin = new Padding(5, 6, 5, 6);
+            tableLayoutPanel.Location = new Point(10, 10);
+            tableLayoutPanel.Margin = new Padding(4);
             tableLayoutPanel.Name = "tableLayoutPanel";
             tableLayoutPanel.RowCount = 6;
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
@@ -61,18 +61,18 @@
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-            tableLayoutPanel.Size = new Size(695, 510);
+            tableLayoutPanel.Size = new Size(488, 306);
             tableLayoutPanel.TabIndex = 0;
             // 
             // logoPictureBox
             // 
             logoPictureBox.Dock = DockStyle.Fill;
             logoPictureBox.Image = (Image)resources.GetObject("logoPictureBox.Image");
-            logoPictureBox.Location = new Point(5, 6);
-            logoPictureBox.Margin = new Padding(5, 6, 5, 6);
+            logoPictureBox.Location = new Point(4, 4);
+            logoPictureBox.Margin = new Padding(4);
             logoPictureBox.Name = "logoPictureBox";
             tableLayoutPanel.SetRowSpan(logoPictureBox, 6);
-            logoPictureBox.Size = new Size(219, 498);
+            logoPictureBox.Size = new Size(153, 298);
             logoPictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
             logoPictureBox.TabIndex = 12;
             logoPictureBox.TabStop = false;
@@ -80,11 +80,11 @@
             // labelProductName
             // 
             labelProductName.Dock = DockStyle.Fill;
-            labelProductName.Location = new Point(239, 0);
-            labelProductName.Margin = new Padding(10, 0, 5, 0);
-            labelProductName.MaximumSize = new Size(0, 33);
+            labelProductName.Location = new Point(168, 0);
+            labelProductName.Margin = new Padding(7, 0, 4, 0);
+            labelProductName.MaximumSize = new Size(0, 20);
             labelProductName.Name = "labelProductName";
-            labelProductName.Size = new Size(451, 33);
+            labelProductName.Size = new Size(316, 20);
             labelProductName.TabIndex = 19;
             labelProductName.Text = "ARC Firmware Tool";
             labelProductName.TextAlign = ContentAlignment.MiddleLeft;
@@ -92,11 +92,11 @@
             // labelVersion
             // 
             labelVersion.Dock = DockStyle.Fill;
-            labelVersion.Location = new Point(239, 51);
-            labelVersion.Margin = new Padding(10, 0, 5, 0);
-            labelVersion.MaximumSize = new Size(0, 33);
+            labelVersion.Location = new Point(168, 30);
+            labelVersion.Margin = new Padding(7, 0, 4, 0);
+            labelVersion.MaximumSize = new Size(0, 20);
             labelVersion.Name = "labelVersion";
-            labelVersion.Size = new Size(451, 33);
+            labelVersion.Size = new Size(316, 20);
             labelVersion.TabIndex = 0;
             labelVersion.Text = "Version: 1.0.1";
             labelVersion.TextAlign = ContentAlignment.MiddleLeft;
@@ -104,11 +104,11 @@
             // labelCopyright
             // 
             labelCopyright.Dock = DockStyle.Fill;
-            labelCopyright.Location = new Point(239, 102);
-            labelCopyright.Margin = new Padding(10, 0, 5, 0);
-            labelCopyright.MaximumSize = new Size(0, 33);
+            labelCopyright.Location = new Point(168, 60);
+            labelCopyright.Margin = new Padding(7, 0, 4, 0);
+            labelCopyright.MaximumSize = new Size(0, 20);
             labelCopyright.Name = "labelCopyright";
-            labelCopyright.Size = new Size(451, 33);
+            labelCopyright.Size = new Size(316, 20);
             labelCopyright.TabIndex = 21;
             labelCopyright.Text = "By: Solaris17 of Techpowerup!";
             labelCopyright.TextAlign = ContentAlignment.MiddleLeft;
@@ -117,20 +117,21 @@
             // 
             okButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             okButton.DialogResult = DialogResult.OK;
-            okButton.Location = new Point(565, 465);
-            okButton.Margin = new Padding(5, 6, 5, 6);
+            okButton.Location = new Point(396, 279);
+            okButton.Margin = new Padding(4);
             okButton.Name = "okButton";
-            okButton.Size = new Size(125, 39);
+            okButton.Size = new Size(88, 23);
             okButton.TabIndex = 24;
             okButton.Text = "&OK";
             okButton.Click += okButton_Click;
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new Point(232, 207);
+            richTextBox1.Location = new Point(163, 122);
+            richTextBox1.Margin = new Padding(2);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
-            richTextBox1.Size = new Size(460, 249);
+            richTextBox1.Size = new Size(323, 149);
             richTextBox1.TabIndex = 25;
             richTextBox1.Text = resources.GetString("richTextBox1.Text");
             richTextBox1.LinkClicked += richTextBox1_LinkClicked;
@@ -138,17 +139,17 @@
             // AboutBox1
             // 
             AcceptButton = okButton;
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(725, 544);
+            ClientSize = new Size(508, 326);
             Controls.Add(tableLayoutPanel);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(5, 6, 5, 6);
+            Margin = new Padding(4);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "AboutBox1";
-            Padding = new Padding(15, 17, 15, 17);
+            Padding = new Padding(10);
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
             Text = "AboutBox1";
