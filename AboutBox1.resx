@@ -331,6 +331,8 @@
   <data name="richTextBox1.Text" xml:space="preserve">
     <value>A GUI application for Intel ARC firmware flashing.
 
+*This tool and its author are not affiliated with Intel in any way.*
+
 For project updates please visit:
 https://github.com/Solaris17/ARC-Firmware-Tool
 
