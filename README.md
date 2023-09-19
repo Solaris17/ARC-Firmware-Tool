@@ -8,6 +8,9 @@
 
 ## About
 
+> [!NOTE]
+> *This tool and its author are not affiliated with Intel in any way.*
+
 A GUI application for Intel ARC firmware flashing!
 
 [Take a look at the Flashing guide](docs/guide.md)

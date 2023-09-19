@@ -19,7 +19,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private readonly string currentVersion = "0.9.0";
-        private readonly string currentVersion = "1.12.0";
+        private readonly string currentVersion = "1.14.0";
 
         public Form1()
         {
@@ -31,8 +31,11 @@ namespace ARC_Firmware_Tool
             // Save log handler
             saveTextToolStripMenuItem.Click += saveTextToolStripMenuItem_Click;
 
-            // download vbios handler
+            // Download vbios handler
             downloadLatestToolStripMenuItem.Click += downloadLatestToolStripMenuItem_Click;
+
+            // Trigger IGSC manually
+            manualToolStripMenuItem.Click += new EventHandler(manualToolStripMenuItem_Click);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -639,6 +642,96 @@ namespace ARC_Firmware_Tool
                 File.WriteAllText(saveFileDialog.FileName, textToSave);
 
                 MessageBox.Show("Log saved to file.", "Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        // Trigger IGSC manually
+        private void manualToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CopyIntelFilesToTemp();
+                RunIGSCFromTemp();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Copy igsc.exe and igsc.dll to temp
+        static void CopyIntelFilesToTemp()
+        {
+            // Read the resource files and copy them out.
+            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            String myProject = "ARC_Firmware_Tool";
+            String file1 = "igsc.exe";
+            String file2 = "igsc.dll";
+            String outputPath = System.IO.Path.GetTempPath();
+            String executablePath = Path.Combine(outputPath, file1);
+
+            // First file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Next file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+        }
+
+        // Open a cmd window and run igsc.exe
+        static void RunIGSCFromTemp()
+        {
+            string outputPath = System.IO.Path.GetTempPath();
+            string executablePath = Path.Combine(outputPath, "igsc.exe");
+
+            if (File.Exists(executablePath))
+            {
+                // Define what "startInfo" does
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    // Using /K instead of /C so the cmd window stays open after the command is executed
+                    // Since IGSC is a console app this appears to create a new cmd window for the IGSC output on exit
+                    Arguments = $"/K \"{executablePath}\" -v",
+                    UseShellExecute = true,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false,
+                    CreateNoWindow = false,
+                    WorkingDirectory = Path.GetDirectoryName(executablePath)
+                };
+
+                // Execute "startInfo"
+                using (Process process = new Process())
+                {
+                    process.StartInfo = startInfo;
+                    process.Start();
+                    process.WaitForExit();
+                }
+            }
+            else
+            {
+                throw new Exception("Failed to copy igsc.exe or igsc.exe does not exist.");
             }
         }
 
