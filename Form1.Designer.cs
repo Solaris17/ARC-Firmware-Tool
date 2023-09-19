@@ -119,10 +119,10 @@ namespace ARC_Firmware_Tool
             // button2
             // 
             button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            button2.Location = new Point(545, 438);
+            button2.Location = new Point(545, 428);
             button2.Margin = new Padding(2);
             button2.Name = "button2";
-            button2.Size = new Size(78, 20);
+            button2.Size = new Size(78, 30);
             button2.TabIndex = 6;
             button2.Text = "Exit";
             button2.UseVisualStyleBackColor = true;
@@ -131,10 +131,10 @@ namespace ARC_Firmware_Tool
             // button3
             // 
             button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            button3.Location = new Point(8, 438);
+            button3.Location = new Point(8, 428);
             button3.Margin = new Padding(2);
             button3.Name = "button3";
-            button3.Size = new Size(78, 20);
+            button3.Size = new Size(78, 30);
             button3.TabIndex = 7;
             button3.Text = "Flash";
             button3.UseVisualStyleBackColor = true;
@@ -156,7 +156,7 @@ namespace ARC_Firmware_Tool
             button4.Location = new Point(545, 28);
             button4.Margin = new Padding(2);
             button4.Name = "button4";
-            button4.Size = new Size(78, 20);
+            button4.Size = new Size(78, 22);
             button4.TabIndex = 13;
             button4.Text = "Browse";
             button4.UseVisualStyleBackColor = true;
@@ -167,7 +167,7 @@ namespace ARC_Firmware_Tool
             button5.Location = new Point(545, 64);
             button5.Margin = new Padding(2);
             button5.Name = "button5";
-            button5.Size = new Size(78, 20);
+            button5.Size = new Size(78, 24);
             button5.TabIndex = 14;
             button5.Text = "Browse";
             button5.UseVisualStyleBackColor = true;
@@ -178,7 +178,7 @@ namespace ARC_Firmware_Tool
             button6.Location = new Point(545, 107);
             button6.Margin = new Padding(2);
             button6.Name = "button6";
-            button6.Size = new Size(78, 20);
+            button6.Size = new Size(78, 23);
             button6.TabIndex = 15;
             button6.Text = "Browse";
             button6.UseVisualStyleBackColor = true;
@@ -189,7 +189,7 @@ namespace ARC_Firmware_Tool
             button7.Location = new Point(545, 141);
             button7.Margin = new Padding(2);
             button7.Name = "button7";
-            button7.Size = new Size(78, 20);
+            button7.Size = new Size(78, 25);
             button7.TabIndex = 16;
             button7.Text = "Browse";
             button7.UseVisualStyleBackColor = true;
@@ -290,8 +290,8 @@ namespace ARC_Firmware_Tool
             // manualToolStripMenuItem
             // 
             manualToolStripMenuItem.Name = "manualToolStripMenuItem";
-            manualToolStripMenuItem.Size = new Size(114, 22);
-            manualToolStripMenuItem.Text = "Manual";
+            manualToolStripMenuItem.Size = new Size(180, 22);
+            manualToolStripMenuItem.Text = "Manual Mode";
             manualToolStripMenuItem.Click += manualToolStripMenuItem_Click;
             // 
             // textBox5
@@ -307,7 +307,7 @@ namespace ARC_Firmware_Tool
             button9.Location = new Point(8, 176);
             button9.Margin = new Padding(2);
             button9.Name = "button9";
-            button9.Size = new Size(92, 20);
+            button9.Size = new Size(92, 23);
             button9.TabIndex = 27;
             button9.Text = "Check a file:";
             button9.UseVisualStyleBackColor = true;
@@ -318,7 +318,7 @@ namespace ARC_Firmware_Tool
             button8.Location = new Point(545, 176);
             button8.Margin = new Padding(2);
             button8.Name = "button8";
-            button8.Size = new Size(78, 20);
+            button8.Size = new Size(78, 23);
             button8.TabIndex = 29;
             button8.Text = "Browse";
             button8.UseVisualStyleBackColor = true;

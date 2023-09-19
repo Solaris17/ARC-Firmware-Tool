@@ -19,7 +19,7 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
         //private readonly string currentVersion = "0.9.0";
-        private readonly string currentVersion = "1.15.0";
+        private readonly string currentVersion = "1.15.2";
 
         public Form1()
         {
@@ -42,6 +42,10 @@ namespace ARC_Firmware_Tool
         {
 
         }
+
+
+
+        // BEGIN Alchemist Block
 
         // Buttons here
 
@@ -242,6 +246,8 @@ namespace ARC_Firmware_Tool
                 await RunProcessWithOutputAsync($"fw hwconfig", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
                 await RunProcessWithOutputAsync($"fw-data version", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
+                await RunProcessWithOutputAsync($"oem version", file1, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
@@ -406,6 +412,10 @@ namespace ARC_Firmware_Tool
                 richTextBox.AppendText(text + Environment.NewLine);
             }
         }
+
+        // END Alchemist Block
+
+        // Begin System Block
 
         // About box
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -794,5 +804,7 @@ namespace ARC_Firmware_Tool
 
             System.Windows.Forms.Application.Exit();
         }
+
+        // END System Block
     }
 }
