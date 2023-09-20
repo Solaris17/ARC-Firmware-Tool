@@ -13,9 +13,9 @@
     <Copyright>Solaris17 of TPU</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>preview</LangVersion>
-    <AssemblyVersion>1.15.2</AssemblyVersion>
-    <FileVersion>1.15.2</FileVersion>
-    <Version>1.15.2</Version>
+    <AssemblyVersion>1.15.3</AssemblyVersion>
+    <FileVersion>1.15.3</FileVersion>
+    <Version>1.15.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

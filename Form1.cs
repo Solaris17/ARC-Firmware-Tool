@@ -3,6 +3,7 @@ using System.Text;
 using Octokit;
 using HtmlAgilityPack;
 using System.Net;
+using System.Reflection;
 
 // I am so trash at C# please help
 
@@ -17,9 +18,7 @@ namespace ARC_Firmware_Tool
         // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
         private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
-        // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
-        //private readonly string currentVersion = "0.9.0";
-        private readonly string currentVersion = "1.15.2";
+        private string currentVersion;
 
         public Form1()
         {
@@ -36,6 +35,23 @@ namespace ARC_Firmware_Tool
 
             // Trigger IGSC manually
             manualToolStripMenuItem.Click += new EventHandler(manualToolStripMenuItem_Click);
+
+            // Initialize currentVersion
+            InitializeCurrentVersion();
+
+        }
+
+        // Get the current version from the build instead of defining it manually
+        private void InitializeCurrentVersion()
+        {
+            // Get the assembly version of the current application
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // Retrieve the product version from the assembly
+            string productVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            // Use productVersion as the current version if available, otherwise use the assembly version
+            currentVersion = !string.IsNullOrWhiteSpace(productVersion) ? productVersion : assembly.GetName().Version.ToString();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -202,6 +218,7 @@ namespace ARC_Firmware_Tool
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
+            AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
 
             await Task.Run(async () =>
             {
@@ -270,6 +287,7 @@ namespace ARC_Firmware_Tool
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
+            AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
             AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n");
 
             // Read the resource files and copy them out.

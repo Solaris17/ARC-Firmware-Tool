@@ -394,7 +394,6 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem saveTextToolStripMenuItem;
         private ToolStripMenuItem downloadLatestToolStripMenuItem;
-        private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem downloadDriverToolStripMenuItem;
         private ToolStripMenuItem optionsToolStripMenuItem;
         private ToolStripMenuItem manualToolStripMenuItem;
