@@ -4,6 +4,7 @@ using Octokit;
 using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
+using System.Management;
 
 // I am so trash at C# please help
 
@@ -220,6 +221,9 @@ namespace ARC_Firmware_Tool
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
             AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
 
+            // Get GPU driver version
+            string deviceToSearch = "Intel(R) Arc(TM)";
+
             await Task.Run(async () =>
             {
                 // Read the resource files and copy them out.
@@ -257,6 +261,21 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
+                // AppendTextToRichTextBox(richTextBox1, "Looking up GPU driver version:\n");
+                // Define and use the GetAndDisplayDriverVersions I want to combine this somehow? but I am trying to translate a powershell command and barely know what I'm doing.
+                // Get-WmiObject Win32_PnPSignedDriver | Where-Object { $_.DeviceName -like '*Intel(R) Arc(TM)*' } | Select-Object -ExpandProperty DriverVersion
+                string query = $"SELECT DeviceName, Manufacturer, DriverVersion FROM Win32_PnPSignedDriver WHERE DeviceName LIKE '%{deviceToSearch}%'";
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+                foreach (ManagementObject driver in searcher.Get())
+                {
+                    //string device = driver["DeviceName"].ToString();
+                    //string manufacturer = driver["Manufacturer"].ToString();
+                    string driverVersion = driver["DriverVersion"].ToString();
+                    //string result = $"{device}\t{manufacturer}\t{driverVersion}\n";
+                    string result = $"{driverVersion}\n";
+                    AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
+                }
+
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
                 await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
@@ -269,6 +288,7 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
         }
+
 
         // Try to re-factor smarter
         // Flash Button
