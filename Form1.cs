@@ -3,6 +3,8 @@ using System.Text;
 using Octokit;
 using HtmlAgilityPack;
 using System.Net;
+using System.Reflection;
+using System.Management;
 
 // I am so trash at C# please help
 
@@ -17,9 +19,7 @@ namespace ARC_Firmware_Tool
         // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
         private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
-        // Specify the current version (that you will release) so that it will always pull the newer one (latest tag)
-        //private readonly string currentVersion = "0.9.0";
-        private readonly string currentVersion = "1.14.0";
+        private string currentVersion;
 
         public Form1()
         {
@@ -36,12 +36,33 @@ namespace ARC_Firmware_Tool
 
             // Trigger IGSC manually
             manualToolStripMenuItem.Click += new EventHandler(manualToolStripMenuItem_Click);
+
+            // Initialize currentVersion
+            InitializeCurrentVersion();
+
+        }
+
+        // Get the current version from the build instead of defining it manually
+        private void InitializeCurrentVersion()
+        {
+            // Get the assembly version of the current application
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // Retrieve the product version from the assembly
+            string productVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            // Use productVersion as the current version if available, otherwise use the assembly version
+            currentVersion = !string.IsNullOrWhiteSpace(productVersion) ? productVersion : assembly.GetName().Version.ToString();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
+
+
+
+        // BEGIN Alchemist Block
 
         // Buttons here
 
@@ -198,6 +219,10 @@ namespace ARC_Firmware_Tool
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
+            AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
+
+            // Get GPU driver version
+            string deviceToSearch = "Intel(R) Arc(TM)";
 
             await Task.Run(async () =>
             {
@@ -236,16 +261,34 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
+                // AppendTextToRichTextBox(richTextBox1, "Looking up GPU driver version:\n");
+                // Define and use the GetAndDisplayDriverVersions I want to combine this somehow? but I am trying to translate a powershell command and barely know what I'm doing.
+                // Get-WmiObject Win32_PnPSignedDriver | Where-Object { $_.DeviceName -like '*Intel(R) Arc(TM)*' } | Select-Object -ExpandProperty DriverVersion
+                string query = $"SELECT DeviceName, Manufacturer, DriverVersion FROM Win32_PnPSignedDriver WHERE DeviceName LIKE '%{deviceToSearch}%'";
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+                foreach (ManagementObject driver in searcher.Get())
+                {
+                    //string device = driver["DeviceName"].ToString();
+                    //string manufacturer = driver["Manufacturer"].ToString();
+                    string driverVersion = driver["DriverVersion"].ToString();
+                    //string result = $"{device}\t{manufacturer}\t{driverVersion}\n";
+                    string result = $"{driverVersion}\n";
+                    AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
+                }
+
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
                 await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
                 await RunProcessWithOutputAsync($"fw hwconfig", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
                 await RunProcessWithOutputAsync($"fw-data version", file1, outputPath);
+                AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
+                await RunProcessWithOutputAsync($"oem version", file1, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
         }
+
 
         // Try to re-factor smarter
         // Flash Button
@@ -264,6 +307,7 @@ namespace ARC_Firmware_Tool
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
+            AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
             AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n");
 
             // Read the resource files and copy them out.
@@ -406,6 +450,10 @@ namespace ARC_Firmware_Tool
                 richTextBox.AppendText(text + Environment.NewLine);
             }
         }
+
+        // END Alchemist Block
+
+        // Begin System Block
 
         // About box
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -794,5 +842,7 @@ namespace ARC_Firmware_Tool
 
             System.Windows.Forms.Application.Exit();
         }
+
+        // END System Block
     }
 }
