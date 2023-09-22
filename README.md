@@ -3,6 +3,7 @@
 ## Stats
 
 <p align="center">
+<a href="https://github.com/Solaris17/ARC-Firmware-Tool/releases"><img alt="GitHub release (with filter)" src="https://img.shields.io/github/v/release/Solaris17/ARC-Firmware-Tool"></a>
 <a href="https://github.com/Solaris17/ARC-Firmware-Tool/releases"><img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Solaris17/ARC-Firmware-Tool/total?label=Downloads"></a>
 </p>
 
