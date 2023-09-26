@@ -165,6 +165,7 @@
         private Label labelProductName;
         private Label labelVersion;
         private Label labelCopyright;
+        private Label labelCompanyName;
         private Button okButton;
         private RichTextBox richTextBox1;
     }
