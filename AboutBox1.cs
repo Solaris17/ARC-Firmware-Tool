@@ -13,6 +13,7 @@ namespace ARC_Firmware_Tool
             this.labelProductName.Text = AssemblyProduct;
             this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion);
             this.labelCopyright.Text = AssemblyCopyright;
+            this.labelCopyright.Text = AssemblyCompany;
         }
 
         #region Assembly Attribute Accessors
