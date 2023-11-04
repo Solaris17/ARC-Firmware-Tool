@@ -9,6 +9,7 @@ This comes with some caveats.
 
 + Windows auto install will not update the firmware.
 + Installing a new Intel GPU and using the previous installation will not update the firmware.
++ Installing previous drivers will not rollback firmware (Driver installs are upgrade only)
 + If the flash process times out during the driver install it will not attempt to install the firmware again.
 
 As you can see too much can be left up in the air. As development matures and driver release cycles slow down depending on how you maintain your system you may find yourself behind on firmware.
@@ -25,6 +26,9 @@ Firmware: Main FW payload. This will have ```"_gfx_fwupdate_``` in the title; li
 Oprom (*Data*): Oprom data. This will have a ```"_d_"``` in the title; like ```dg2_d_oprom_asr770.rom```.
 
 Oprom (*Code*): Oprom code. This will have a ```"_c_"``` in the title; like ```dg2_c_oprom.rom```.
+
+> [!NOTE]
+> The Data and Code versions can differ, but they are often the same.
 
 FW Data / Config Data: 
  - FW data. This will have ```"_fwdata_"``` in the title; like ```dg2_fwdata_asrock770.bin```.
