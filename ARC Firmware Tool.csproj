@@ -13,9 +13,9 @@
     <Copyright>Solaris17 of TPU</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>preview</LangVersion>
-    <AssemblyVersion>1.17.2</AssemblyVersion>
-    <FileVersion>1.17.2</FileVersion>
-    <Version>1.17.2</Version>
+    <AssemblyVersion>1.18.0</AssemblyVersion>
+    <FileVersion>1.18.0</FileVersion>
+    <Version>1.18.0</Version>
     <Company>Solaris17 (www.couchit.net)</Company>
     <Title>ARC Firmware Tool</Title>
     <Description>Firmware Wrapper for IGSC</Description>
@@ -42,7 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Octokit" Version="7.1.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="Octokit" Version="9.0.0" />
+    <PackageReference Include="System.Management" Version="7.0.2" />
   </ItemGroup>
 
   <ItemGroup>
