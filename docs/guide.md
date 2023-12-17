@@ -41,6 +41,10 @@ The sequence chosen reflects the sequence of the flash as it appears in the Inte
 
 First lets take a look at the firmware matrix I have assembled. You can access it here:
 
+https://github.com/Solaris17/Arc-Firmware
+
+or
+
 https://www.techpowerup.com/forums/threads/intel-arc-firmware-compilation-matrix.312440/
 
 Once you have your files it as simple as making sure they are put into the correct boxes using the guide above.
