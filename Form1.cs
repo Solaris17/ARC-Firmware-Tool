@@ -154,6 +154,7 @@ namespace ARC_Firmware_Tool
                 String myProject = "ARC_Firmware_Tool";
                 String file1 = "igsc.exe";
                 String file2 = "igsc.dll";
+                String file3 = "Intel-API.exe";
                 String outputPath = System.IO.Path.GetTempPath();
                 String executablePath = Path.Combine(outputPath, file1);
 
@@ -177,6 +178,19 @@ namespace ARC_Firmware_Tool
                 using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
                 {
                     using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
+                // Third file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
                     {
                         for (int i = 0; i < stream.Length; i++)
                         {
@@ -227,11 +241,13 @@ namespace ARC_Firmware_Tool
             await Task.Run(async () =>
             {
                 // Read the resource files and copy them out.
+                // Remember to set these as embedded resources or you will get mad for like 2 hours.
                 System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
 
                 String myProject = "ARC_Firmware_Tool";
                 String file1 = "igsc.exe";
                 String file2 = "igsc.dll";
+                String file3 = "Intel-API.exe";
                 String outputPath = System.IO.Path.GetTempPath();
                 String executablePath = Path.Combine(outputPath, file1);
 
@@ -261,6 +277,19 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
+                // Third file.
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+
                 // AppendTextToRichTextBox(richTextBox1, "Looking up GPU driver version:\n");
                 // Define and use the GetAndDisplayDriverVersions I want to combine this somehow? but I am trying to translate a powershell command and barely know what I'm doing.
                 // Get-WmiObject Win32_PnPSignedDriver | Where-Object { $_.DeviceName -like '*Intel(R) Arc(TM)*' } | Select-Object -ExpandProperty DriverVersion
@@ -276,6 +305,11 @@ namespace ARC_Firmware_Tool
                     AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
                 }
 
+                // Retrieve the GOP version using Intel-API.exe
+                string gopVersion = await GetGopVersionAsync(outputPath);
+                AppendTextToRichTextBox(richTextBox1, "GOP (vBIOS) Version: " + gopVersion + "\n");
+                
+                // Call the rest using igsc
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
                 await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
@@ -288,6 +322,55 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
             });
         }
+
+        // Add Intel API Methods here:
+
+        // Method to get the GOP version
+        private async Task<string> GetGopVersionAsync(string outputPath)
+        {
+            string gopVersion = null;
+            string intelApiPath = Path.Combine(outputPath, "Intel-API.exe");
+
+            if (!File.Exists(intelApiPath))
+            {
+                // Log or handle the error: File not found
+                return null;
+            }
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = intelApiPath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            using (Process process = Process.Start(startInfo))
+            {
+                if (process == null || process.StandardOutput == null)
+                {
+                    // Log or handle the error: Process start failed
+                    return null;
+                }
+
+                using (StreamReader reader = process.StandardOutput)
+                {
+                    string result = await reader.ReadToEndAsync();
+                    string[] lines = result.Split('\n');
+                    foreach (var line in lines)
+                    {
+                        if (line.Contains("GOP Version :"))
+                        {
+                            gopVersion = line.Split(':')[1].Trim();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return gopVersion;
+        }
+
 
 
         // Try to re-factor smarter
@@ -315,6 +398,7 @@ namespace ARC_Firmware_Tool
             String myProject = "ARC_Firmware_Tool";
             String file1 = "igsc.exe";
             String file2 = "igsc.dll";
+            String file3 = "Intel-API.exe";
             String outputPath = System.IO.Path.GetTempPath();
 
             // Create variables from other methods
@@ -340,6 +424,19 @@ namespace ARC_Firmware_Tool
             using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
             {
                 using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Third file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
                 {
                     for (int i = 0; i < stream.Length; i++)
                     {
@@ -717,6 +814,7 @@ namespace ARC_Firmware_Tool
             String myProject = "ARC_Firmware_Tool";
             String file1 = "igsc.exe";
             String file2 = "igsc.dll";
+            String file3 = "Intel-API.exe";
             String outputPath = System.IO.Path.GetTempPath();
             String executablePath = Path.Combine(outputPath, file1);
 
@@ -737,6 +835,19 @@ namespace ARC_Firmware_Tool
             using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
             {
                 using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Third file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
                 {
                     for (int i = 0; i < stream.Length; i++)
                     {
@@ -832,7 +943,7 @@ namespace ARC_Firmware_Tool
             string outputPath = Path.GetTempPath();
 
             // Define the file extensions and specific file names to delete
-            string[] extensionsAndFilesToDelete = { ".bin", ".rom", "igsc.dll", "igsc.exe" }; // You can also add specific files here.
+            string[] extensionsAndFilesToDelete = { ".bin", ".rom", "igsc.dll", "igsc.exe", "Intel-API.exe" }; // You can also add specific files here.
 
             // Delete files by extension and specific files
             foreach (string itemToDelete in extensionsAndFilesToDelete)

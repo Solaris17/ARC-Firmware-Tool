@@ -19,6 +19,7 @@
     <Company>Solaris17 (www.couchit.net)</Company>
     <Title>ARC Firmware Tool</Title>
     <Description>Firmware Wrapper for IGSC</Description>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
   <ItemGroup>
     <None Remove="Resources\igsc.dll" />
     <None Remove="Resources\igsc.exe" />
+    <None Remove="Resources\Intel-API.exe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,12 +41,13 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\igsc.dll" />
     <EmbeddedResource Include="Resources\igsc.exe" />
+    <EmbeddedResource Include="Resources\Intel-API.exe" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.57" />
     <PackageReference Include="Octokit" Version="9.0.0" />
-    <PackageReference Include="System.Management" Version="7.0.2" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

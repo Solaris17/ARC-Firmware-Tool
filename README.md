@@ -20,6 +20,8 @@ This tool allows the flashing and downgrading of firmware on Intel discrete grap
 
 Looking for fancy maybe broken features? Check out the [beta branch](https://github.com/Solaris17/ARC-Firmware-Tool/tree/beta).
 
+Don't forget to peek at the [firmware matrix](https://github.com/Solaris17/Arc-Firmware)
+
 -----
 
 ## Utility
