@@ -696,9 +696,16 @@ namespace ARC_Firmware_Tool
 
                 if (updateNeeded)
                 {
+                    var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                    github.Credentials = new Credentials(PersonalAccessToken);
+
+                    // Get the latest release tag name
+                    var latestRelease = await github.Repository.Release.GetLatest(RepoOwner, RepoName);
+                    string tagName = latestRelease?.TagName ?? "latest";
+
                     var saveFileDialog = new SaveFileDialog
                     {
-                        FileName = "ARC Firmware Tool.exe",
+                        FileName = $"ARC Firmware Tool {tagName}.exe",
                         Filter = "Executable files (*.exe)|*.exe",
                         Title = "Save Update File"
                     };
@@ -790,9 +797,18 @@ namespace ARC_Firmware_Tool
 
                     if (updateNeeded)
                     {
-                        var saveFileDialog = new SaveFileDialog
+
+                    var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                    github.Credentials = new Credentials(PersonalAccessToken);
+
+                    // Get the latest tag name regardless
+                    var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+                    var mostRecentRelease = releases.FirstOrDefault();
+                    string tagName = mostRecentRelease?.TagName ?? "latest";
+
+                    var saveFileDialog = new SaveFileDialog
                         {
-                            FileName = "ARC Firmware Tool.exe",
+                            FileName = $"ARC Firmware Tool {tagName}.exe",
                             Filter = "Executable files (*.exe)|*.exe",
                             Title = "Save Update File"
                         };
