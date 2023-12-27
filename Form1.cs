@@ -550,6 +550,8 @@ namespace ARC_Firmware_Tool
 
         // END Alchemist Block
 
+
+
         // Begin System Block
 
         // About box
@@ -562,6 +564,9 @@ namespace ARC_Firmware_Tool
         // Lets get the latest BIOS'
         private async void downloadLatestToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
             // Tell them we are checking since this can take some time.
             AppendTextToRichTextBox(richTextBox1, "Checking for vBIOS Package...");
 
@@ -606,6 +611,9 @@ namespace ARC_Firmware_Tool
         // Let's download the latest driver
         private async void downloadDriverToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
             // Tell them we are checking since this can take some time.
             AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
 
@@ -687,6 +695,9 @@ namespace ARC_Firmware_Tool
         // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
         private async void stableToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
             // Tell them we are checking since this can take some time.
             AppendTextToRichTextBox(richTextBox1, "Checking for new version (Stable)...");
 
@@ -787,9 +798,11 @@ namespace ARC_Firmware_Tool
             // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
             private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
             {
+                // Clear the RichTextBox
+                richTextBox1.Clear();
 
-            // Tell them we are checking since this can take some time.
-            AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
+                // Tell them we are checking since this can take some time.
+                AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
 
             try
                 {
