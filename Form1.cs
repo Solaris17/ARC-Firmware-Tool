@@ -308,7 +308,7 @@ namespace ARC_Firmware_Tool
                 // Retrieve the GOP version using Intel-API.exe
                 string gopVersion = await GetGopVersionAsync(outputPath);
                 AppendTextToRichTextBox(richTextBox1, "GOP (vBIOS) Version: " + gopVersion + "\n");
-                
+
                 // Call the rest using igsc
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
                 await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
@@ -550,6 +550,8 @@ namespace ARC_Firmware_Tool
 
         // END Alchemist Block
 
+
+
         // Begin System Block
 
         // About box
@@ -562,6 +564,12 @@ namespace ARC_Firmware_Tool
         // Lets get the latest BIOS'
         private async void downloadLatestToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for vBIOS Package...");
+
             using (HttpClient httpClient = new HttpClient())
             {
                 try
@@ -603,6 +611,12 @@ namespace ARC_Firmware_Tool
         // Let's download the latest driver
         private async void downloadDriverToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
+
             // Load the main URL
             HtmlWeb web = new HtmlWeb();
             HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
@@ -676,20 +690,33 @@ namespace ARC_Firmware_Tool
             // I literally can't believe I got this to work.
         }
 
-        // Lets do a software update
+        // Lets do a software update (Stable)
         // Do some version checks
         // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
-        private async void updateToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void stableToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for new version (Stable)...");
+
             try
             {
                 bool updateNeeded = await CheckAndUpdateVersionAsync();
 
                 if (updateNeeded)
                 {
+                    var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                    github.Credentials = new Credentials(PersonalAccessToken);
+
+                    // Get the latest release tag name
+                    var latestRelease = await github.Repository.Release.GetLatest(RepoOwner, RepoName);
+                    string tagName = latestRelease?.TagName ?? "latest";
+
                     var saveFileDialog = new SaveFileDialog
                     {
-                        FileName = "ARC Firmware Tool.exe",
+                        FileName = $"ARC Firmware Tool {tagName}.exe",
                         Filter = "Executable files (*.exe)|*.exe",
                         Title = "Save Update File"
                     };
@@ -717,9 +744,9 @@ namespace ARC_Firmware_Tool
 
             github.Credentials = new Credentials(PersonalAccessToken);
 
-            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+            // Get the latest release instead of pulling the first (which could be beta)
+            var latestRelease = await github.Repository.Release.GetLatest(RepoOwner, RepoName);
 
-            var latestRelease = releases.FirstOrDefault();
             if (latestRelease != null)
             {
                 string latestVersion = latestRelease.TagName;
@@ -740,9 +767,9 @@ namespace ARC_Firmware_Tool
 
             github.Credentials = new Credentials(PersonalAccessToken);
 
-            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+            // Get the latest release
+            var latestRelease = await github.Repository.Release.GetLatest(RepoOwner, RepoName);
 
-            var latestRelease = releases.FirstOrDefault();
             if (latestRelease != null)
             {
                 var asset = latestRelease.Assets.FirstOrDefault();
@@ -765,6 +792,111 @@ namespace ARC_Firmware_Tool
                 }
             }
         }
+
+            // Lets do a software update (Beta)
+            // Do some version checks
+            // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+            private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                // Clear the RichTextBox
+                richTextBox1.Clear();
+
+                // Tell them we are checking since this can take some time.
+                AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
+
+            try
+                {
+                    bool updateNeeded = await CheckAndBetaUpdateVersionAsync();
+
+                    if (updateNeeded)
+                    {
+
+                    var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                    github.Credentials = new Credentials(PersonalAccessToken);
+
+                    // Get the latest tag name regardless
+                    var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+                    var mostRecentRelease = releases.FirstOrDefault();
+                    string tagName = mostRecentRelease?.TagName ?? "latest";
+
+                    var saveFileDialog = new SaveFileDialog
+                        {
+                            FileName = $"ARC Firmware Tool {tagName}.exe",
+                            Filter = "Executable files (*.exe)|*.exe",
+                            Title = "Save Update File"
+                        };
+
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            await DownloadAndSaveBetaUpdate(saveFileDialog.FileName);
+                            MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            private async Task<bool> CheckAndBetaUpdateVersionAsync()
+            {
+                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+                github.Credentials = new Credentials(PersonalAccessToken);
+
+                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+                var latestRelease = releases.FirstOrDefault();
+                if (latestRelease != null)
+                {
+                    string latestVersion = latestRelease.TagName;
+
+                    if (Version.TryParse(latestVersion, out Version latest) &&
+                        Version.TryParse(currentVersion, out Version current) &&
+                        latest > current)
+                    {
+                        return true; // New version is needed
+                    }
+                }
+                return false; // App is up to date
+            }
+
+            private async Task DownloadAndSaveBetaUpdate(string savePath)
+            {
+                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+                github.Credentials = new Credentials(PersonalAccessToken);
+
+                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+                var latestRelease = releases.FirstOrDefault();
+                if (latestRelease != null)
+                {
+                    var asset = latestRelease.Assets.FirstOrDefault();
+                    if (asset != null)
+                    {
+                        string assetUrl = asset.BrowserDownloadUrl;
+
+                        using (var httpClient = new HttpClient())
+                        {
+                            var response = await httpClient.GetAsync(assetUrl);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                using (var stream = await response.Content.ReadAsStreamAsync())
+                                using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
+                                {
+                                    await stream.CopyToAsync(fileStream);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         // Lets save the output from the textbox
         private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
