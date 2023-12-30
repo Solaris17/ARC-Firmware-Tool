@@ -937,7 +937,7 @@ namespace ARC_Firmware_Tool
             }
         }
 
-        // Copy igsc.exe and igsc.dll to temp
+        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
         static void CopyIntelFilesToTemp()
         {
             // Read the resource files and copy them out.
@@ -1023,6 +1023,111 @@ namespace ARC_Firmware_Tool
             else
             {
                 throw new Exception("Failed to copy igsc.exe or igsc.exe does not exist.");
+            }
+        }
+
+        // API Debug
+        // Trigger API manually
+        private void aPIDebugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CopyIntelAPIFilesToTemp();
+                RunAPIFromTemp();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
+        static void CopyIntelAPIFilesToTemp()
+        {
+            // Read the resource files and copy them out.
+            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            String myProject = "ARC_Firmware_Tool";
+            String file1 = "igsc.exe";
+            String file2 = "igsc.dll";
+            String file3 = "Intel-API.exe";
+            String outputPath = System.IO.Path.GetTempPath();
+            String executablePath = Path.Combine(outputPath, file1);
+
+            // First file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Next file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Third file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+        }
+
+        // Open a cmd window and run Intel-API.exe
+        static void RunAPIFromTemp()
+        {
+            string outputPath = System.IO.Path.GetTempPath();
+            string executablePath = Path.Combine(outputPath, "Intel-API.exe");
+
+            if (File.Exists(executablePath))
+            {
+                // Define what "startInfo" does
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    // Using /K instead of /C so the cmd window stays open after the command is executed
+                    // Since Intel-API is a console app this appears to create a new cmd window for the Intel-API output on exit
+                    Arguments = $"/K \"{executablePath}\" -v",
+                    UseShellExecute = true,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false,
+                    CreateNoWindow = false,
+                    WorkingDirectory = Path.GetDirectoryName(executablePath)
+                };
+
+                // Execute "startInfo"
+                using (Process process = new Process())
+                {
+                    process.StartInfo = startInfo;
+                    process.Start();
+                    process.WaitForExit();
+                }
+            }
+            else
+            {
+                throw new Exception("Failed to copy Intel-API.exe or Intel-API.exe does not exist.");
             }
         }
 

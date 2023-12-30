@@ -60,6 +60,7 @@ namespace ARC_Firmware_Tool
             downloadDriverToolStripMenuItem = new ToolStripMenuItem();
             optionsToolStripMenuItem = new ToolStripMenuItem();
             manualToolStripMenuItem = new ToolStripMenuItem();
+            aPIDebugToolStripMenuItem = new ToolStripMenuItem();
             textBox5 = new TextBox();
             button9 = new Button();
             button8 = new Button();
@@ -298,7 +299,7 @@ namespace ARC_Firmware_Tool
             // 
             // optionsToolStripMenuItem
             // 
-            optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { manualToolStripMenuItem });
+            optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { manualToolStripMenuItem, aPIDebugToolStripMenuItem });
             optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             optionsToolStripMenuItem.Size = new Size(61, 22);
             optionsToolStripMenuItem.Text = "Options";
@@ -306,9 +307,15 @@ namespace ARC_Firmware_Tool
             // manualToolStripMenuItem
             // 
             manualToolStripMenuItem.Name = "manualToolStripMenuItem";
-            manualToolStripMenuItem.Size = new Size(148, 22);
+            manualToolStripMenuItem.Size = new Size(180, 22);
             manualToolStripMenuItem.Text = "Manual Mode";
             manualToolStripMenuItem.Click += manualToolStripMenuItem_Click;
+            // 
+            // aPIDebugToolStripMenuItem
+            // 
+            aPIDebugToolStripMenuItem.Name = "aPIDebugToolStripMenuItem";
+            aPIDebugToolStripMenuItem.Size = new Size(180, 22);
+            aPIDebugToolStripMenuItem.Text = "API Debug";
             // 
             // textBox5
             // 
@@ -415,5 +422,6 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem manualToolStripMenuItem;
         private ToolStripMenuItem betaUpdateToolStripMenuItem;
         private ToolStripMenuItem stableToolStripMenuItem;
+        private ToolStripMenuItem aPIDebugToolStripMenuItem;
     }
 }
