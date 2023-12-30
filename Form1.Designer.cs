@@ -313,9 +313,11 @@ namespace ARC_Firmware_Tool
             // 
             // aPIDebugToolStripMenuItem
             // 
+            aPIDebugToolStripMenuItem.Enabled = false;
             aPIDebugToolStripMenuItem.Name = "aPIDebugToolStripMenuItem";
             aPIDebugToolStripMenuItem.Size = new Size(180, 22);
             aPIDebugToolStripMenuItem.Text = "API Debug";
+            aPIDebugToolStripMenuItem.Visible = false;
             // 
             // textBox5
             // 
