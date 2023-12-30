@@ -37,6 +37,9 @@ namespace ARC_Firmware_Tool
             // Trigger IGSC manually
             manualToolStripMenuItem.Click += new EventHandler(manualToolStripMenuItem_Click);
 
+            // Trigger Intel-API manually
+            aPIDebugToolStripMenuItem.Click += new EventHandler(aPIDebugToolStripMenuItem_Click);
+
             // Initialize currentVersion
             InitializeCurrentVersion();
 
@@ -1053,7 +1056,7 @@ namespace ARC_Firmware_Tool
             String file2 = "igsc.dll";
             String file3 = "Intel-API.exe";
             String outputPath = System.IO.Path.GetTempPath();
-            String executablePath = Path.Combine(outputPath, file1);
+            String executablePath = Path.Combine(outputPath, file3);
 
             // First file.
             using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
@@ -1109,7 +1112,7 @@ namespace ARC_Firmware_Tool
                     FileName = "cmd.exe",
                     // Using /K instead of /C so the cmd window stays open after the command is executed
                     // Since Intel-API is a console app this appears to create a new cmd window for the Intel-API output on exit
-                    Arguments = $"/K \"{executablePath}\" -v",
+                    Arguments = $"/K \"{executablePath}\"",
                     UseShellExecute = true,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
