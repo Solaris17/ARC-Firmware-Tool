@@ -308,9 +308,27 @@ namespace ARC_Firmware_Tool
                     AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
                 }
 
-                // Retrieve the GOP version using Intel-API.exe
-                string gopVersion = await GetGopVersionAsync(outputPath);
-                AppendTextToRichTextBox(richTextBox1, "GOP (vBIOS) Version: " + gopVersion + "\n");
+                // Retrieve the GOP versions along with adapter names using Intel-API.exe
+                List<(string AdapterName, string GopVersion)> adapterInfos = await GetGopVersionsAsync(outputPath);
+
+                if (adapterInfos.Count == 0)
+                {
+                    AppendTextToRichTextBox(richTextBox1, "No adapters detected or unable to retrieve GOP versions.\n");
+                }
+                else
+                {
+                    foreach (var adapterInfo in adapterInfos)
+                    {
+                        string message = $"Adapter Name: {adapterInfo.AdapterName}, GOP (vBIOS) Version for Adapter: {adapterInfo.GopVersion}";
+                        if (adapterInfo.GopVersion == "0.0.0")
+                        {
+                            message += " (GPU may not be initialized/active)";
+                        }
+                        message += "\n";
+
+                        AppendTextToRichTextBox(richTextBox1, message);
+                    }
+                }
 
                 // Call the rest using igsc
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
@@ -328,16 +346,16 @@ namespace ARC_Firmware_Tool
 
         // Add Intel API Methods here:
 
-        // Method to get the GOP version
-        private async Task<string> GetGopVersionAsync(string outputPath)
+        // Method to get the GOP version along with adapter names
+        private async Task<List<(string AdapterName, string GopVersion)>> GetGopVersionsAsync(string outputPath)
         {
-            string gopVersion = null;
+            List<(string AdapterName, string GopVersion)> adapterInfo = new List<(string AdapterName, string GopVersion)>();
             string intelApiPath = Path.Combine(outputPath, "Intel-API.exe");
 
             if (!File.Exists(intelApiPath))
             {
                 // Log or handle the error: File not found
-                return null;
+                return adapterInfo;
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo
@@ -353,27 +371,39 @@ namespace ARC_Firmware_Tool
                 if (process == null || process.StandardOutput == null)
                 {
                     // Log or handle the error: Process start failed
-                    return null;
+                    return adapterInfo;
                 }
 
                 using (StreamReader reader = process.StandardOutput)
                 {
                     string result = await reader.ReadToEndAsync();
                     string[] lines = result.Split('\n');
+
+                    string currentAdapterName = "";
                     foreach (var line in lines)
                     {
-                        if (line.Contains("GOP Version :"))
+                        if (line.StartsWith("*** Testing adapter #"))
                         {
-                            gopVersion = line.Split(':')[1].Trim();
-                            break;
+                            currentAdapterName = "";
+                        }
+                        else if (line.Contains("Intel Adapter Name:"))
+                        {
+                            currentAdapterName = line.Split(':')[1].Trim();
+                        }
+                        else if (line.Contains("GOP Version :"))
+                        {
+                            string gopVersion = line.Split(':')[1].Trim();
+                            if (!string.IsNullOrEmpty(currentAdapterName))
+                            {
+                                adapterInfo.Add((currentAdapterName, gopVersion));
+                            }
                         }
                     }
                 }
             }
 
-            return gopVersion;
+            return adapterInfo;
         }
-
 
 
         // Try to re-factor smarter
