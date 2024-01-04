@@ -1062,12 +1062,15 @@ namespace ARC_Firmware_Tool
 
         // API Debug
         // Trigger API manually
-        private void aPIDebugToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void aPIDebugToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
             try
             {
                 CopyIntelAPIFilesToTemp();
-                RunAPIFromTemp();
+                await RunAPIFromTemp(richTextBox1); // Pass to the RichTextBox
             }
             catch (Exception ex)
             {
@@ -1129,8 +1132,9 @@ namespace ARC_Firmware_Tool
             }
         }
 
-        // Open a cmd window and run Intel-API.exe
-        static void RunAPIFromTemp()
+        // Run Intel-API.exe
+        // Leave myself a lot of notes
+        static async Task RunAPIFromTemp(RichTextBox richTextBox1)
         {
             string outputPath = System.IO.Path.GetTempPath();
             string executablePath = Path.Combine(outputPath, "Intel-API.exe");
@@ -1140,14 +1144,11 @@ namespace ARC_Firmware_Tool
                 // Define what "startInfo" does
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    FileName = "cmd.exe",
-                    // Using /K instead of /C so the cmd window stays open after the command is executed
-                    // Since Intel-API is a console app this appears to create a new cmd window for the Intel-API output on exit
-                    Arguments = $"/K \"{executablePath}\"",
-                    UseShellExecute = true,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = false,
+                    FileName = executablePath,
+                    UseShellExecute = false, // Set to false to redirect output
+                    RedirectStandardOutput = true, // Redirect standard output
+                    RedirectStandardError = true, // Optionally, capture error messages
+                    CreateNoWindow = true, // No need to create a window
                     WorkingDirectory = Path.GetDirectoryName(executablePath)
                 };
 
@@ -1156,6 +1157,17 @@ namespace ARC_Firmware_Tool
                 {
                     process.StartInfo = startInfo;
                     process.Start();
+
+                    // Read the output stream asynchronously
+                    while (!process.StandardOutput.EndOfStream)
+                    {
+                        string line = await process.StandardOutput.ReadLineAsync();
+                        richTextBox1.Invoke(new Action(() =>
+                        {
+                            richTextBox1.AppendText(line + "\n");
+                        }));
+                    }
+
                     process.WaitForExit();
                 }
             }
