@@ -319,12 +319,15 @@ namespace ARC_Firmware_Tool
                 {
                     foreach (var adapterInfo in adapterInfos)
                     {
-                        string message = $"Adapter Name: {adapterInfo.AdapterName}, GOP (vBIOS) Version for Adapter: {adapterInfo.GopVersion}";
+                        string message = $"Adapter Name: {adapterInfo.AdapterName}\n"; // Adapter name on one line
+                        message += $"GOP (vBIOS) Version: {adapterInfo.GopVersion}";   // GOP version on the next line
+
                         if (adapterInfo.GopVersion == "0.0.0")
                         {
                             message += " (GPU may not be initialized/active)";
                         }
-                        message += "\n";
+
+                        message += "\n\n"; // Adding extra newline for spacing between adapters
 
                         AppendTextToRichTextBox(richTextBox1, message);
                     }
@@ -354,7 +357,7 @@ namespace ARC_Firmware_Tool
 
             if (!File.Exists(intelApiPath))
             {
-                // Log or handle the error: File not found
+                AppendTextToRichTextBox(richTextBox1, "Error: Intel-API.exe not found.\n");
                 return adapterInfo;
             }
 
@@ -370,7 +373,7 @@ namespace ARC_Firmware_Tool
             {
                 if (process == null || process.StandardOutput == null)
                 {
-                    // Log or handle the error: Process start failed
+                    AppendTextToRichTextBox(richTextBox1, "Error: Failed to start Intel-API.exe process.\n");
                     return adapterInfo;
                 }
 
@@ -380,23 +383,21 @@ namespace ARC_Firmware_Tool
                     string[] lines = result.Split('\n');
 
                     string currentAdapterName = "";
+                    string currentGopVersion = "";
                     foreach (var line in lines)
                     {
-                        if (line.StartsWith("*** Testing adapter #"))
-                        {
-                            currentAdapterName = "";
-                        }
-                        else if (line.Contains("Intel Adapter Name:"))
+                        if (line.Contains("Intel Adapter Name:"))
                         {
                             currentAdapterName = line.Split(':')[1].Trim();
+                            if (!string.IsNullOrEmpty(currentGopVersion))
+                            {
+                                adapterInfo.Add((currentAdapterName, currentGopVersion));
+                                currentGopVersion = ""; // Reset for the next adapter
+                            }
                         }
                         else if (line.Contains("GOP Version :"))
                         {
-                            string gopVersion = line.Split(':')[1].Trim();
-                            if (!string.IsNullOrEmpty(currentAdapterName))
-                            {
-                                adapterInfo.Add((currentAdapterName, gopVersion));
-                            }
+                            currentGopVersion = line.Split(':')[1].Trim();
                         }
                     }
                 }
@@ -405,7 +406,7 @@ namespace ARC_Firmware_Tool
             return adapterInfo;
         }
 
-
+        
         // Try to re-factor smarter
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
