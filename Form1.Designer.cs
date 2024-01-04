@@ -60,6 +60,7 @@ namespace ARC_Firmware_Tool
             downloadDriverToolStripMenuItem = new ToolStripMenuItem();
             optionsToolStripMenuItem = new ToolStripMenuItem();
             manualToolStripMenuItem = new ToolStripMenuItem();
+            aPIDebugToolStripMenuItem = new ToolStripMenuItem();
             textBox5 = new TextBox();
             button9 = new Button();
             button8 = new Button();
@@ -110,7 +111,7 @@ namespace ARC_Firmware_Tool
             // 
             button1.Anchor = AnchorStyles.Bottom;
             button1.Location = new Point(242, 236);
-            button1.Margin = new Padding(2, 2, 2, 2);
+            button1.Margin = new Padding(2);
             button1.Name = "button1";
             button1.Size = new Size(147, 32);
             button1.TabIndex = 5;
@@ -122,7 +123,7 @@ namespace ARC_Firmware_Tool
             // 
             button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             button2.Location = new Point(545, 428);
-            button2.Margin = new Padding(2, 2, 2, 2);
+            button2.Margin = new Padding(2);
             button2.Name = "button2";
             button2.Size = new Size(78, 30);
             button2.TabIndex = 6;
@@ -134,7 +135,7 @@ namespace ARC_Firmware_Tool
             // 
             button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             button3.Location = new Point(8, 428);
-            button3.Margin = new Padding(2, 2, 2, 2);
+            button3.Margin = new Padding(2);
             button3.Name = "button3";
             button3.Size = new Size(78, 30);
             button3.TabIndex = 7;
@@ -146,7 +147,7 @@ namespace ARC_Firmware_Tool
             // 
             richTextBox1.Anchor = AnchorStyles.Bottom;
             richTextBox1.Location = new Point(91, 272);
-            richTextBox1.Margin = new Padding(2, 2, 2, 2);
+            richTextBox1.Margin = new Padding(2);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.ReadOnly = true;
             richTextBox1.Size = new Size(451, 188);
@@ -156,7 +157,7 @@ namespace ARC_Firmware_Tool
             // button4
             // 
             button4.Location = new Point(545, 28);
-            button4.Margin = new Padding(2, 2, 2, 2);
+            button4.Margin = new Padding(2);
             button4.Name = "button4";
             button4.Size = new Size(78, 22);
             button4.TabIndex = 13;
@@ -167,7 +168,7 @@ namespace ARC_Firmware_Tool
             // button5
             // 
             button5.Location = new Point(545, 64);
-            button5.Margin = new Padding(2, 2, 2, 2);
+            button5.Margin = new Padding(2);
             button5.Name = "button5";
             button5.Size = new Size(78, 24);
             button5.TabIndex = 14;
@@ -178,7 +179,7 @@ namespace ARC_Firmware_Tool
             // button6
             // 
             button6.Location = new Point(545, 107);
-            button6.Margin = new Padding(2, 2, 2, 2);
+            button6.Margin = new Padding(2);
             button6.Name = "button6";
             button6.Size = new Size(78, 23);
             button6.TabIndex = 15;
@@ -189,7 +190,7 @@ namespace ARC_Firmware_Tool
             // button7
             // 
             button7.Location = new Point(545, 141);
-            button7.Margin = new Padding(2, 2, 2, 2);
+            button7.Margin = new Padding(2);
             button7.Name = "button7";
             button7.Size = new Size(78, 25);
             button7.TabIndex = 16;
@@ -200,7 +201,7 @@ namespace ARC_Firmware_Tool
             // textBox1
             // 
             textBox1.Location = new Point(115, 27);
-            textBox1.Margin = new Padding(2, 2, 2, 2);
+            textBox1.Margin = new Padding(2);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(378, 23);
             textBox1.TabIndex = 21;
@@ -208,7 +209,7 @@ namespace ARC_Firmware_Tool
             // textBox2
             // 
             textBox2.Location = new Point(115, 65);
-            textBox2.Margin = new Padding(2, 2, 2, 2);
+            textBox2.Margin = new Padding(2);
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(378, 23);
             textBox2.TabIndex = 22;
@@ -216,7 +217,7 @@ namespace ARC_Firmware_Tool
             // textBox3
             // 
             textBox3.Location = new Point(115, 107);
-            textBox3.Margin = new Padding(2, 2, 2, 2);
+            textBox3.Margin = new Padding(2);
             textBox3.Name = "textBox3";
             textBox3.Size = new Size(378, 23);
             textBox3.TabIndex = 23;
@@ -224,7 +225,7 @@ namespace ARC_Firmware_Tool
             // textBox4
             // 
             textBox4.Location = new Point(115, 143);
-            textBox4.Margin = new Padding(2, 2, 2, 2);
+            textBox4.Margin = new Padding(2);
             textBox4.Name = "textBox4";
             textBox4.Size = new Size(378, 23);
             textBox4.TabIndex = 24;
@@ -298,7 +299,7 @@ namespace ARC_Firmware_Tool
             // 
             // optionsToolStripMenuItem
             // 
-            optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { manualToolStripMenuItem });
+            optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { manualToolStripMenuItem, aPIDebugToolStripMenuItem });
             optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             optionsToolStripMenuItem.Size = new Size(61, 22);
             optionsToolStripMenuItem.Text = "Options";
@@ -306,14 +307,22 @@ namespace ARC_Firmware_Tool
             // manualToolStripMenuItem
             // 
             manualToolStripMenuItem.Name = "manualToolStripMenuItem";
-            manualToolStripMenuItem.Size = new Size(148, 22);
+            manualToolStripMenuItem.Size = new Size(180, 22);
             manualToolStripMenuItem.Text = "Manual Mode";
             manualToolStripMenuItem.Click += manualToolStripMenuItem_Click;
+            // 
+            // aPIDebugToolStripMenuItem
+            // 
+            aPIDebugToolStripMenuItem.Enabled = false;
+            aPIDebugToolStripMenuItem.Name = "aPIDebugToolStripMenuItem";
+            aPIDebugToolStripMenuItem.Size = new Size(180, 22);
+            aPIDebugToolStripMenuItem.Text = "API Debug";
+            aPIDebugToolStripMenuItem.Visible = false;
             // 
             // textBox5
             // 
             textBox5.Location = new Point(115, 176);
-            textBox5.Margin = new Padding(2, 2, 2, 2);
+            textBox5.Margin = new Padding(2);
             textBox5.Name = "textBox5";
             textBox5.Size = new Size(378, 23);
             textBox5.TabIndex = 28;
@@ -321,7 +330,7 @@ namespace ARC_Firmware_Tool
             // button9
             // 
             button9.Location = new Point(8, 176);
-            button9.Margin = new Padding(2, 2, 2, 2);
+            button9.Margin = new Padding(2);
             button9.Name = "button9";
             button9.Size = new Size(92, 23);
             button9.TabIndex = 27;
@@ -332,7 +341,7 @@ namespace ARC_Firmware_Tool
             // button8
             // 
             button8.Location = new Point(545, 176);
-            button8.Margin = new Padding(2, 2, 2, 2);
+            button8.Margin = new Padding(2);
             button8.Name = "button8";
             button8.Size = new Size(78, 23);
             button8.TabIndex = 29;
@@ -370,7 +379,7 @@ namespace ARC_Firmware_Tool
             Controls.Add(menuStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
-            Margin = new Padding(2, 2, 2, 2);
+            Margin = new Padding(2);
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
@@ -415,5 +424,6 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem manualToolStripMenuItem;
         private ToolStripMenuItem betaUpdateToolStripMenuItem;
         private ToolStripMenuItem stableToolStripMenuItem;
+        private ToolStripMenuItem aPIDebugToolStripMenuItem;
     }
 }

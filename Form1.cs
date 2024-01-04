@@ -37,6 +37,9 @@ namespace ARC_Firmware_Tool
             // Trigger IGSC manually
             manualToolStripMenuItem.Click += new EventHandler(manualToolStripMenuItem_Click);
 
+            // Trigger Intel-API manually
+            aPIDebugToolStripMenuItem.Click += new EventHandler(aPIDebugToolStripMenuItem_Click);
+
             // Initialize currentVersion
             InitializeCurrentVersion();
 
@@ -305,9 +308,30 @@ namespace ARC_Firmware_Tool
                     AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
                 }
 
-                // Retrieve the GOP version using Intel-API.exe
-                string gopVersion = await GetGopVersionAsync(outputPath);
-                AppendTextToRichTextBox(richTextBox1, "GOP (vBIOS) Version: " + gopVersion + "\n");
+                // Retrieve the GOP versions along with adapter names using Intel-API.exe
+                List<(string AdapterName, string GopVersion)> adapterInfos = await GetGopVersionsAsync(outputPath);
+
+                if (adapterInfos.Count == 0)
+                {
+                    AppendTextToRichTextBox(richTextBox1, "No adapters detected or unable to retrieve GOP versions.\n");
+                }
+                else
+                {
+                    foreach (var adapterInfo in adapterInfos)
+                    {
+                        string message = $"Adapter Name: {adapterInfo.AdapterName}\n"; // Adapter name on one line
+                        message += $"GOP (vBIOS) Version: {adapterInfo.GopVersion}";   // GOP version on the next line
+
+                        if (adapterInfo.GopVersion == "0.0.0")
+                        {
+                            message += " (GPU may not be initialized/active)";
+                        }
+
+                        message += "\n\n"; // Adding extra newline for spacing between adapters
+
+                        AppendTextToRichTextBox(richTextBox1, message);
+                    }
+                }
 
                 // Call the rest using igsc
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
@@ -325,16 +349,16 @@ namespace ARC_Firmware_Tool
 
         // Add Intel API Methods here:
 
-        // Method to get the GOP version
-        private async Task<string> GetGopVersionAsync(string outputPath)
+        // Method to get the GOP version along with adapter names
+        private async Task<List<(string AdapterName, string GopVersion)>> GetGopVersionsAsync(string outputPath)
         {
-            string gopVersion = null;
+            List<(string AdapterName, string GopVersion)> adapterInfo = new List<(string AdapterName, string GopVersion)>();
             string intelApiPath = Path.Combine(outputPath, "Intel-API.exe");
 
             if (!File.Exists(intelApiPath))
             {
-                // Log or handle the error: File not found
-                return null;
+                AppendTextToRichTextBox(richTextBox1, "Error: Intel-API.exe not found.\n");
+                return adapterInfo;
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo
@@ -349,30 +373,40 @@ namespace ARC_Firmware_Tool
             {
                 if (process == null || process.StandardOutput == null)
                 {
-                    // Log or handle the error: Process start failed
-                    return null;
+                    AppendTextToRichTextBox(richTextBox1, "Error: Failed to start Intel-API.exe process.\n");
+                    return adapterInfo;
                 }
 
                 using (StreamReader reader = process.StandardOutput)
                 {
                     string result = await reader.ReadToEndAsync();
                     string[] lines = result.Split('\n');
+
+                    string currentAdapterName = "";
+                    string currentGopVersion = "";
                     foreach (var line in lines)
                     {
-                        if (line.Contains("GOP Version :"))
+                        if (line.Contains("Intel Adapter Name:"))
                         {
-                            gopVersion = line.Split(':')[1].Trim();
-                            break;
+                            currentAdapterName = line.Split(':')[1].Trim();
+                            if (!string.IsNullOrEmpty(currentGopVersion))
+                            {
+                                adapterInfo.Add((currentAdapterName, currentGopVersion));
+                                currentGopVersion = ""; // Reset for the next adapter
+                            }
+                        }
+                        else if (line.Contains("GOP Version :"))
+                        {
+                            currentGopVersion = line.Split(':')[1].Trim();
                         }
                     }
                 }
             }
 
-            return gopVersion;
+            return adapterInfo;
         }
 
-
-
+        
         // Try to re-factor smarter
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
@@ -937,7 +971,7 @@ namespace ARC_Firmware_Tool
             }
         }
 
-        // Copy igsc.exe and igsc.dll to temp
+        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
         static void CopyIntelFilesToTemp()
         {
             // Read the resource files and copy them out.
@@ -1023,6 +1057,123 @@ namespace ARC_Firmware_Tool
             else
             {
                 throw new Exception("Failed to copy igsc.exe or igsc.exe does not exist.");
+            }
+        }
+
+        // API Debug
+        // Trigger API manually
+        private async void aPIDebugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            try
+            {
+                CopyIntelAPIFilesToTemp();
+                await RunAPIFromTemp(richTextBox1); // Pass to the RichTextBox
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
+        static void CopyIntelAPIFilesToTemp()
+        {
+            // Read the resource files and copy them out.
+            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            String myProject = "ARC_Firmware_Tool";
+            String file1 = "igsc.exe";
+            String file2 = "igsc.dll";
+            String file3 = "Intel-API.exe";
+            String outputPath = System.IO.Path.GetTempPath();
+            String executablePath = Path.Combine(outputPath, file3);
+
+            // First file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Next file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+
+            // Third file.
+            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
+            {
+                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
+                {
+                    for (int i = 0; i < stream.Length; i++)
+                    {
+                        fileStream.WriteByte((byte)stream.ReadByte());
+                    }
+                    fileStream.Close();
+                }
+            }
+        }
+
+        // Run Intel-API.exe
+        // Leave myself a lot of notes
+        static async Task RunAPIFromTemp(RichTextBox richTextBox1)
+        {
+            string outputPath = System.IO.Path.GetTempPath();
+            string executablePath = Path.Combine(outputPath, "Intel-API.exe");
+
+            if (File.Exists(executablePath))
+            {
+                // Define what "startInfo" does
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = executablePath,
+                    UseShellExecute = false, // Set to false to redirect output
+                    RedirectStandardOutput = true, // Redirect standard output
+                    RedirectStandardError = true, // Optionally, capture error messages
+                    CreateNoWindow = true, // No need to create a window
+                    WorkingDirectory = Path.GetDirectoryName(executablePath)
+                };
+
+                // Execute "startInfo"
+                using (Process process = new Process())
+                {
+                    process.StartInfo = startInfo;
+                    process.Start();
+
+                    // Read the output stream asynchronously
+                    while (!process.StandardOutput.EndOfStream)
+                    {
+                        string line = await process.StandardOutput.ReadLineAsync();
+                        richTextBox1.Invoke(new Action(() =>
+                        {
+                            richTextBox1.AppendText(line + "\n");
+                        }));
+                    }
+
+                    process.WaitForExit();
+                }
+            }
+            else
+            {
+                throw new Exception("Failed to copy Intel-API.exe or Intel-API.exe does not exist.");
             }
         }
 
