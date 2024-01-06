@@ -43,6 +43,9 @@ namespace ARC_Firmware_Tool
             // Initialize currentVersion
             InitializeCurrentVersion();
 
+            // FTP upload event handler
+            this.uploadLogToolStripMenuItem.Click += new EventHandler(uploadLogToolStripMenuItem_Click);
+
         }
 
         // Get the current version from the build instead of defining it manually
@@ -953,6 +956,103 @@ namespace ARC_Firmware_Tool
                 File.WriteAllText(saveFileDialog.FileName, textToSave);
 
                 MessageBox.Show("Log saved to file.", "Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        // Lets upload the output from the textbox
+        private void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Confirmation dialog with sentences on separate lines
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload Confirmation", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Call "Scan HW" since thats what we want
+                button1_Click(sender, e);
+
+                // Upload the content of richTextBox1
+                UploadRichTextBoxContentToFtp();
+            }
+            else
+            {
+                // User chose not to upload, display the message in richTextBox1 so they know
+                richTextBox1.Clear();
+                richTextBox1.AppendText("Upload canceled by user.");
+            }
+        }
+
+        // Method to generate a random string so that we dont collide
+        private string GenerateRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                                      .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        // Do some formatting and set variables
+        private void UploadRichTextBoxContentToFtp()
+        {
+            string textToUpload = richTextBox1.Text;
+
+            // Generate a random alphanumeric string of 12 characters then append it
+            string randomString = GenerateRandomString(12);
+            string fileName = $"ARC-Flash-log-{randomString}.txt";
+            string tempFilePath = Path.Combine(Path.GetTempPath(), fileName);
+
+            File.WriteAllText(tempFilePath, textToUpload);
+
+            // FTP details
+            string ftpServerUrl = "ftp://yourserver.com/folder";
+            string ftpUsername = "ftpUsername";
+            string ftpPassword = "ftpPassword";
+
+            // Attempt to upload the file and check if it succeeds
+            bool uploadSuccess = UploadFileToFtp(ftpServerUrl, tempFilePath, ftpUsername, ftpPassword);
+
+            if (uploadSuccess)
+            {
+                // Create the download link
+                string downloadBaseUrl = "https://yourserver.com/folder/";
+                string downloadLink = $"{downloadBaseUrl}{fileName}";
+
+                // Clear the richTextBox1 and print the download link so they can copy it
+                richTextBox1.Clear();
+                richTextBox1.AppendText("File uploaded successfully.\n\nYou can download it here:\n");
+                richTextBox1.AppendText(downloadLink);
+            }
+        }
+
+        // Upload the file to the FTP server
+        // Make sure the server config is safe
+        private bool UploadFileToFtp(string url, string filePath, string username, string password)
+        {
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = new NetworkCredential(username, password);
+                request.UseBinary = true;
+                request.UsePassive = true;
+
+                byte[] fileContents = File.ReadAllBytes(filePath);
+                request.ContentLength = fileContents.Length;
+
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(fileContents, 0, fileContents.Length);
+                }
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
+                }
+
+                return true; // Successful upload
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false; // Upload failed
             }
         }
 
