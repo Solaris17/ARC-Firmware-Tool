@@ -5,6 +5,8 @@ using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
 using System.Management;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 // I am so trash at C# please help
 
@@ -1020,10 +1022,18 @@ namespace ARC_Firmware_Tool
                 richTextBox1.AppendText("File uploaded successfully.\n\nYou can download it here:\n");
                 richTextBox1.AppendText(downloadLink);
             }
+            else
+            {
+                // Upload failed
+                richTextBox1.Clear();
+                richTextBox1.AppendText("File upload failed. Please check your connection and try again.");
+            }
         }
 
         // Upload the file to the FTP server
         // Make sure the server config is safe
+        // Write some messages to console so you can see what's going on
+        // Man I should really tie some of this in via another form
         private bool UploadFileToFtp(string url, string filePath, string username, string password)
         {
             try
@@ -1031,8 +1041,11 @@ namespace ARC_Firmware_Tool
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
                 request.Method = WebRequestMethods.Ftp.UploadFile;
                 request.Credentials = new NetworkCredential(username, password);
+                request.EnableSsl = true; // Enable SSL
                 request.UseBinary = true;
                 request.UsePassive = true;
+
+                ServicePointManager.ServerCertificateValidationCallback += ValidateServerCertificate;
 
                 byte[] fileContents = File.ReadAllBytes(filePath);
                 request.ContentLength = fileContents.Length;
@@ -1051,9 +1064,48 @@ namespace ARC_Firmware_Tool
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Console.WriteLine($"Error occurred during FTP upload: {ex.Message}");
                 return false; // Upload failed
             }
+            finally
+            {
+                ServicePointManager.ServerCertificateValidationCallback -= ValidateServerCertificate;
+            }
+        }
+
+        // Certificate validation method
+        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+                return true;
+
+            X509Certificate2 cert2 = new X509Certificate2(certificate);
+
+            // Check the expiry date
+            if (DateTime.Now > cert2.NotAfter || DateTime.Now < cert2.NotBefore)
+            {
+                Console.WriteLine("Certificate expired or not yet valid.");
+                return false;
+            }
+
+            // Check the thumbprint
+            string knownGoodThumbprint = "your known good thumbprint here";
+            if (cert2.Thumbprint != knownGoodThumbprint)
+            {
+                Console.WriteLine("Certificate thumbprint mismatch.");
+                return false;
+            }
+
+            // Check hostname (example.com should be replaced with your expected hostname)
+            if (!cert2.Subject.Contains("CN=example.com"))
+            {
+                Console.WriteLine("Hostname mismatch.");
+                return false;
+            }
+
+            // Additional checks maybe?
+
+            return true;
         }
 
         // Trigger IGSC manually
