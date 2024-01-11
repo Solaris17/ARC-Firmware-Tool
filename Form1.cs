@@ -234,6 +234,11 @@ namespace ARC_Firmware_Tool
         // Scan Hardware Button
         private async void button1_Click(object sender, EventArgs e)
         {
+            await PerformHardwareScanAsync();
+        }
+        
+        private async Task PerformHardwareScanAsync()
+        {
             // Clear the RichTextBox
             richTextBox1.Clear();
 
@@ -962,16 +967,16 @@ namespace ARC_Firmware_Tool
         }
 
         // Lets upload the output from the textbox
-        private void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Confirmation dialog with sentences on separate lines
             DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload Confirmation", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
             {
-                // Call "Scan HW" since thats what we want
-                button1_Click(sender, e);
+                // Await the hardware scan
+                await PerformHardwareScanAsync();
 
-                // Upload the content of richTextBox1
+                // Then upload the content of richTextBox1
                 UploadRichTextBoxContentToFtp();
             }
             else
@@ -1019,14 +1024,14 @@ namespace ARC_Firmware_Tool
 
                 // Clear the richTextBox1 and print the download link so they can copy it
                 richTextBox1.Clear();
-                richTextBox1.AppendText("File uploaded successfully.\n\nYou can download it here:\n");
+                richTextBox1.AppendText("File uploaded successfully.\n\nYou can copy the following link here:\n\n");
                 richTextBox1.AppendText(downloadLink);
             }
             else
             {
                 // Upload failed
                 richTextBox1.Clear();
-                richTextBox1.AppendText("File upload failed. Please check your connection and try again.");
+                richTextBox1.AppendText("File upload failed. Please check your connection and try again.\n\n");
             }
         }
 
@@ -1041,11 +1046,9 @@ namespace ARC_Firmware_Tool
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
                 request.Method = WebRequestMethods.Ftp.UploadFile;
                 request.Credentials = new NetworkCredential(username, password);
-                request.EnableSsl = true; // Enable SSL
+                request.EnableSsl = true; // If using FTPS
                 request.UseBinary = true;
                 request.UsePassive = true;
-
-                ServicePointManager.ServerCertificateValidationCallback += ValidateServerCertificate;
 
                 byte[] fileContents = File.ReadAllBytes(filePath);
                 request.ContentLength = fileContents.Length;
@@ -1057,19 +1060,34 @@ namespace ARC_Firmware_Tool
 
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
-                    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
-                }
+                    System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
 
-                return true; // Successful upload
+                    if (response.StatusCode == FtpStatusCode.ClosingData ||
+                        response.StatusCode == FtpStatusCode.CommandOK ||
+                        response.StatusCode == FtpStatusCode.FileActionOK ||
+                        response.StatusCode == FtpStatusCode.ClosingControl)
+                    {
+                        return true; // Assume success if no exception is thrown
+                    }
+                    else
+                    {
+                        return false; // Consider other statuses as failures
+                    }
+                }
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
-                Console.WriteLine($"Error occurred during FTP upload: {ex.Message}");
-                return false; // Upload failed
-            }
-            finally
-            {
-                ServicePointManager.ServerCertificateValidationCallback -= ValidateServerCertificate;
+                FtpWebResponse response = ex.Response as FtpWebResponse;
+                if (response != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
+                    response.Close();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"FTP Exception: {ex.Message}");
+                }
+                return false; // Treat exceptions as failures
             }
         }
 
@@ -1088,7 +1106,7 @@ namespace ARC_Firmware_Tool
                 return false;
             }
 
-            // Check the thumbprint
+            // Check the SHA-256 fingerprint (thumbprint)
             string knownGoodThumbprint = "your known good thumbprint here";
             if (cert2.Thumbprint != knownGoodThumbprint)
             {
@@ -1098,10 +1116,10 @@ namespace ARC_Firmware_Tool
 
             // Check hostname (example.com should be replaced with your expected hostname)
             if (!cert2.Subject.Contains("CN=example.com"))
-            {
-                Console.WriteLine("Hostname mismatch.");
-                return false;
-            }
+           {
+               Console.WriteLine("Hostname mismatch.");
+               return false;
+           }
 
             // Additional checks maybe?
 
