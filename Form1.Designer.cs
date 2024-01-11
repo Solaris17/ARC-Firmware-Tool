@@ -56,11 +56,13 @@ namespace ARC_Firmware_Tool
             betaUpdateToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem = new ToolStripMenuItem();
             saveTextToolStripMenuItem = new ToolStripMenuItem();
-            downloadLatestToolStripMenuItem = new ToolStripMenuItem();
-            downloadDriverToolStripMenuItem = new ToolStripMenuItem();
+            uploadLogToolStripMenuItem = new ToolStripMenuItem();
             optionsToolStripMenuItem = new ToolStripMenuItem();
             manualToolStripMenuItem = new ToolStripMenuItem();
             aPIDebugToolStripMenuItem = new ToolStripMenuItem();
+            downloadToolStripMenuItem = new ToolStripMenuItem();
+            downloadLatestToolStripMenuItem = new ToolStripMenuItem();
+            downloadDriverToolStripMenuItem = new ToolStripMenuItem();
             textBox5 = new TextBox();
             button9 = new Button();
             button8 = new Button();
@@ -233,7 +235,7 @@ namespace ARC_Firmware_Tool
             // menuStrip1
             // 
             menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem, updateToolStripMenuItem, fileToolStripMenuItem, optionsToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { aboutToolStripMenuItem, updateToolStripMenuItem, fileToolStripMenuItem, optionsToolStripMenuItem, downloadToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Padding = new Padding(4, 1, 0, 1);
@@ -273,7 +275,7 @@ namespace ARC_Firmware_Tool
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, downloadLatestToolStripMenuItem, downloadDriverToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, uploadLogToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 22);
             fileToolStripMenuItem.Text = "File";
@@ -281,21 +283,14 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(162, 22);
+            saveTextToolStripMenuItem.Size = new Size(135, 22);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
-            // downloadLatestToolStripMenuItem
+            // uploadLogToolStripMenuItem
             // 
-            downloadLatestToolStripMenuItem.Name = "downloadLatestToolStripMenuItem";
-            downloadLatestToolStripMenuItem.Size = new Size(162, 22);
-            downloadLatestToolStripMenuItem.Text = "Download vBios";
-            // 
-            // downloadDriverToolStripMenuItem
-            // 
-            downloadDriverToolStripMenuItem.Name = "downloadDriverToolStripMenuItem";
-            downloadDriverToolStripMenuItem.Size = new Size(162, 22);
-            downloadDriverToolStripMenuItem.Text = "Download Driver";
-            downloadDriverToolStripMenuItem.Click += downloadDriverToolStripMenuItem_Click;
+            uploadLogToolStripMenuItem.Name = "uploadLogToolStripMenuItem";
+            uploadLogToolStripMenuItem.Size = new Size(135, 22);
+            uploadLogToolStripMenuItem.Text = "Upload Log";
             // 
             // optionsToolStripMenuItem
             // 
@@ -318,6 +313,26 @@ namespace ARC_Firmware_Tool
             aPIDebugToolStripMenuItem.Size = new Size(180, 22);
             aPIDebugToolStripMenuItem.Text = "API Debug";
             aPIDebugToolStripMenuItem.Visible = false;
+            // 
+            // downloadToolStripMenuItem
+            // 
+            downloadToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { downloadLatestToolStripMenuItem, downloadDriverToolStripMenuItem });
+            downloadToolStripMenuItem.Name = "downloadToolStripMenuItem";
+            downloadToolStripMenuItem.Size = new Size(73, 22);
+            downloadToolStripMenuItem.Text = "Download";
+            // 
+            // downloadLatestToolStripMenuItem
+            // 
+            downloadLatestToolStripMenuItem.Name = "downloadLatestToolStripMenuItem";
+            downloadLatestToolStripMenuItem.Size = new Size(162, 22);
+            downloadLatestToolStripMenuItem.Text = "Download vBios";
+            // 
+            // downloadDriverToolStripMenuItem
+            // 
+            downloadDriverToolStripMenuItem.Name = "downloadDriverToolStripMenuItem";
+            downloadDriverToolStripMenuItem.Size = new Size(162, 22);
+            downloadDriverToolStripMenuItem.Text = "Download Driver";
+            downloadDriverToolStripMenuItem.Click += downloadDriverToolStripMenuItem_Click;
             // 
             // textBox5
             // 
@@ -418,12 +433,14 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem updateToolStripMenuItem;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem saveTextToolStripMenuItem;
-        private ToolStripMenuItem downloadLatestToolStripMenuItem;
-        private ToolStripMenuItem downloadDriverToolStripMenuItem;
         private ToolStripMenuItem optionsToolStripMenuItem;
         private ToolStripMenuItem manualToolStripMenuItem;
         private ToolStripMenuItem betaUpdateToolStripMenuItem;
         private ToolStripMenuItem stableToolStripMenuItem;
         private ToolStripMenuItem aPIDebugToolStripMenuItem;
+        private ToolStripMenuItem downloadToolStripMenuItem;
+        private ToolStripMenuItem uploadLogToolStripMenuItem;
+        private ToolStripMenuItem downloadLatestToolStripMenuItem;
+        private ToolStripMenuItem downloadDriverToolStripMenuItem;
     }
 }

@@ -5,6 +5,8 @@ using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
 using System.Management;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 // I am so trash at C# please help
 
@@ -20,6 +22,17 @@ namespace ARC_Firmware_Tool
         private const string PersonalAccessToken = "";
         // Expire when?: Thu, Aug 22 2024
         private string currentVersion;
+
+        // FTP Configuration
+        private const string FtpServerUrl = "ftp://example.com";
+        private const string FtpUsername = "my-user";
+        private const string FtpPassword = "user-password";
+        private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
+
+        // Certificate validation configuration
+        // Fingerprints can change everytime the certificate is renewed, so we need to update this value accordingly
+        private const string KnownGoodThumbprint = "your known good thumbprint here";
+        private const string ExpectedHostname = "example.com";
 
         public Form1()
         {
@@ -42,6 +55,9 @@ namespace ARC_Firmware_Tool
 
             // Initialize currentVersion
             InitializeCurrentVersion();
+
+            // FTP upload event handler
+            this.uploadLogToolStripMenuItem.Click += new EventHandler(uploadLogToolStripMenuItem_Click);
 
         }
 
@@ -228,6 +244,11 @@ namespace ARC_Firmware_Tool
         // Made this asyc so I can add more later.
         // Scan Hardware Button
         private async void button1_Click(object sender, EventArgs e)
+        {
+            await PerformHardwareScanAsync();
+        }
+        
+        private async Task PerformHardwareScanAsync()
         {
             // Clear the RichTextBox
             richTextBox1.Clear();
@@ -954,6 +975,159 @@ namespace ARC_Firmware_Tool
 
                 MessageBox.Show("Log saved to file.", "Save Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        // Lets upload the output from the textbox
+        private async void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Confirmation dialog with sentences on separate lines
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload Confirmation", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Await the hardware scan
+                await PerformHardwareScanAsync();
+
+                // Then upload the content of richTextBox1
+                UploadRichTextBoxContentToFtp();
+            }
+            else
+            {
+                // User chose not to upload, display the message in richTextBox1 so they know
+                richTextBox1.Clear();
+                richTextBox1.AppendText("Upload canceled by user.");
+            }
+        }
+
+        // Method to generate a random string so that we dont collide
+        private string GenerateRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                                      .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        // Do some formatting and set variables
+        private void UploadRichTextBoxContentToFtp()
+        {
+            string textToUpload = richTextBox1.Text;
+
+            // Generate a random alphanumeric string of 12 characters then append it
+            string randomString = GenerateRandomString(12);
+            string fileName = $"ARC-Flash-log-{randomString}.txt";
+            string tempFilePath = Path.Combine(Path.GetTempPath(), fileName);
+
+            File.WriteAllText(tempFilePath, textToUpload);
+
+            // Attempt to upload the file and check if it succeeds
+            bool uploadSuccess = UploadFileToFtp(FtpServerUrl, tempFilePath, FtpUsername, FtpPassword);
+
+            if (uploadSuccess)
+            {
+                // Create the download link
+                string downloadLink = $"{DownloadBaseUrl}{fileName}";
+
+                // Clear the richTextBox1 and print the download link so they can copy it
+                richTextBox1.Clear();
+                richTextBox1.AppendText("File uploaded successfully.\n\nYou can copy the following link here:\n\n");
+                richTextBox1.AppendText(downloadLink);
+            }
+            else
+            {
+                // Upload failed
+                richTextBox1.Clear();
+                richTextBox1.AppendText("File upload failed. Please check your connection and try again.\n\n");
+            }
+        }
+
+        // Upload the file to the FTP server
+        // Make sure the server config is safe
+        // Write some messages to console so you can see what's going on
+        // Man I should really tie some of this in via another form
+        private bool UploadFileToFtp(string url, string filePath, string username, string password)
+        {
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = new NetworkCredential(username, password);
+                request.EnableSsl = true; // If using FTPS
+                request.UseBinary = true;
+                request.UsePassive = true;
+
+                byte[] fileContents = File.ReadAllBytes(filePath);
+                request.ContentLength = fileContents.Length;
+
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(fileContents, 0, fileContents.Length);
+                }
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
+
+                    if (response.StatusCode == FtpStatusCode.ClosingData ||
+                        response.StatusCode == FtpStatusCode.CommandOK ||
+                        response.StatusCode == FtpStatusCode.FileActionOK ||
+                        response.StatusCode == FtpStatusCode.ClosingControl)
+                    {
+                        return true; // Assume success if no exception is thrown
+                    }
+                    else
+                    {
+                        return false; // Consider other statuses as failures
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                FtpWebResponse response = ex.Response as FtpWebResponse;
+                if (response != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
+                    response.Close();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"FTP Exception: {ex.Message}");
+                }
+                return false; // Treat exceptions as failures
+            }
+        }
+
+        // Certificate validation method
+        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+                return true;
+
+            X509Certificate2 cert2 = new X509Certificate2(certificate);
+
+            // Check the expiry date
+            if (DateTime.Now > cert2.NotAfter || DateTime.Now < cert2.NotBefore)
+            {
+                Console.WriteLine("Certificate expired or not yet valid.");
+                return false;
+            }
+
+            // Check the SHA-256 fingerprint (thumbprint)
+            if (cert2.Thumbprint != KnownGoodThumbprint)
+            {
+                Console.WriteLine("Certificate thumbprint mismatch.");
+                return false;
+            }
+
+            // Check hostname
+            if (!cert2.Subject.Contains($"CN={ExpectedHostname}"))
+            {
+                Console.WriteLine("Hostname mismatch.");
+                return false;
+            }
+
+            // Additional checks maybe?
+
+            return true;
         }
 
         // Trigger IGSC manually

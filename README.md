@@ -40,7 +40,12 @@ Don't forget to peek at the [firmware matrix](https://github.com/Solaris17/Arc-F
 ## Features
 
 > [!NOTE]
-> This software also has the ability to check for new versions and the ability to download the latest vbios's in addition to an about-box with basic info.
+> This software also has the ability to:
+
+- Check for new versions Stable and Beta
+- Download the latest vbios's
+- Download the lastest Driver
+- Upload hardware scan logs for easy sharing
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Update.gif?raw=true)
 
