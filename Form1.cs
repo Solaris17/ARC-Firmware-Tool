@@ -23,6 +23,16 @@ namespace ARC_Firmware_Tool
         // Expire when?: Thu, Aug 22 2024
         private string currentVersion;
 
+        // FTP Configuration
+        private const string FtpServerUrl = "ftp://example.com";
+        private const string FtpUsername = "my-user";
+        private const string FtpPassword = "user-password";
+        private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
+
+        // Certificate validation configuration
+        private const string KnownGoodThumbprint = "your known good thumbprint here";
+        private const string ExpectedHostname = "example.com";
+
         public Form1()
         {
             InitializeComponent();
@@ -1008,19 +1018,13 @@ namespace ARC_Firmware_Tool
 
             File.WriteAllText(tempFilePath, textToUpload);
 
-            // FTP details
-            string ftpServerUrl = "ftp://yourserver.com/folder";
-            string ftpUsername = "ftpUsername";
-            string ftpPassword = "ftpPassword";
-
             // Attempt to upload the file and check if it succeeds
-            bool uploadSuccess = UploadFileToFtp(ftpServerUrl, tempFilePath, ftpUsername, ftpPassword);
+            bool uploadSuccess = UploadFileToFtp(FtpServerUrl, tempFilePath, FtpUsername, FtpPassword);
 
             if (uploadSuccess)
             {
                 // Create the download link
-                string downloadBaseUrl = "https://yourserver.com/folder/";
-                string downloadLink = $"{downloadBaseUrl}{fileName}";
+                string downloadLink = $"{DownloadBaseUrl}{fileName}";
 
                 // Clear the richTextBox1 and print the download link so they can copy it
                 richTextBox1.Clear();
@@ -1107,19 +1111,18 @@ namespace ARC_Firmware_Tool
             }
 
             // Check the SHA-256 fingerprint (thumbprint)
-            string knownGoodThumbprint = "your known good thumbprint here";
-            if (cert2.Thumbprint != knownGoodThumbprint)
+            if (cert2.Thumbprint != KnownGoodThumbprint)
             {
                 Console.WriteLine("Certificate thumbprint mismatch.");
                 return false;
             }
 
-            // Check hostname (example.com should be replaced with your expected hostname)
-            if (!cert2.Subject.Contains("CN=example.com"))
-           {
-               Console.WriteLine("Hostname mismatch.");
-               return false;
-           }
+            // Check hostname
+            if (!cert2.Subject.Contains($"CN={ExpectedHostname}"))
+            {
+                Console.WriteLine("Hostname mismatch.");
+                return false;
+            }
 
             // Additional checks maybe?
 
