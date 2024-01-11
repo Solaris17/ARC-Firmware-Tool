@@ -30,6 +30,7 @@ namespace ARC_Firmware_Tool
         private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
 
         // Certificate validation configuration
+        // Fingerprints can change everytime the certificate is renewed, so we need to update this value accordingly
         private const string KnownGoodThumbprint = "your known good thumbprint here";
         private const string ExpectedHostname = "example.com";
 
