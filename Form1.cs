@@ -59,6 +59,9 @@ namespace ARC_Firmware_Tool
             // FTP upload event handler
             this.uploadLogToolStripMenuItem.Click += new EventHandler(uploadLogToolStripMenuItem_Click);
 
+            // Link click event handler
+            richTextBox1.LinkClicked += new LinkClickedEventHandler(RichTextBox1_LinkClicked);
+
         }
 
         // Get the current version from the build instead of defining it manually
@@ -1031,12 +1034,31 @@ namespace ARC_Firmware_Tool
                 richTextBox1.Clear();
                 richTextBox1.AppendText("File uploaded successfully.\n\nYou can copy the following link here:\n\n");
                 richTextBox1.AppendText(downloadLink);
+                richTextBox1.DetectUrls = true;
             }
             else
             {
                 // Upload failed
                 richTextBox1.Clear();
-                richTextBox1.AppendText("File upload failed. Please check your connection and try again.\n\n");
+                richTextBox1.AppendText("File upload failed.\n\nPlease check your connection and try again.\n\n");
+            }
+        }
+
+        // Make link clickable
+        private void RichTextBox1_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = e.LinkText,
+                    UseShellExecute = true
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not open the link: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
