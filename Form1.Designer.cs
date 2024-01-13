@@ -302,7 +302,7 @@ namespace ARC_Firmware_Tool
             // manualToolStripMenuItem
             // 
             manualToolStripMenuItem.Name = "manualToolStripMenuItem";
-            manualToolStripMenuItem.Size = new Size(148, 22);
+            manualToolStripMenuItem.Size = new Size(180, 22);
             manualToolStripMenuItem.Text = "Manual Mode";
             manualToolStripMenuItem.Click += manualToolStripMenuItem_Click;
             // 
@@ -310,7 +310,7 @@ namespace ARC_Firmware_Tool
             // 
             aPIDebugToolStripMenuItem.Enabled = false;
             aPIDebugToolStripMenuItem.Name = "aPIDebugToolStripMenuItem";
-            aPIDebugToolStripMenuItem.Size = new Size(148, 22);
+            aPIDebugToolStripMenuItem.Size = new Size(180, 22);
             aPIDebugToolStripMenuItem.Text = "API Debug";
             aPIDebugToolStripMenuItem.Visible = false;
             // 
@@ -398,7 +398,7 @@ namespace ARC_Firmware_Tool
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "ARC Firmware Tool (BETA)";
+            Text = "ARC Firmware Tool";
             Load += Form1_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
