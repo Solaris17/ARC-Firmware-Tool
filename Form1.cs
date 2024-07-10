@@ -1040,7 +1040,7 @@ namespace ARC_Firmware_Tool
             {
                 // Upload failed
                 richTextBox1.Clear();
-                richTextBox1.AppendText("File upload failed.\n\nPlease check your connection and try again.\n\n");
+                richTextBox1.AppendText("File upload failed.\n\nPlease check your connection and try again.\n\nYou may need to update AFT\n\n");
             }
         }
 
