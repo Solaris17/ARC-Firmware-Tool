@@ -20,7 +20,7 @@ namespace ARC_Firmware_Tool
         private const string RepoName = "ARC-Firmware-Tool";
         // Make this expire and make this limited in scope (per repo) then only give it read perms to code meta data. This token should be repo/app specific dont give it yours or your other apps.
         private const string PersonalAccessToken = "";
-        // Expire when?: Thu, Aug 22 2024
+        // Expire when?: Thu, Aug 19 2025
         private string currentVersion;
 
         // FTP Configuration
@@ -29,7 +29,7 @@ namespace ARC_Firmware_Tool
         private const string FtpPassword = "user-password";
         private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
 
-        // Certificate validation configuration
+        // Certificate validation configuration This is the SHA-256 Certificate fingerprint.
         // Fingerprints can change everytime the certificate is renewed, so we need to update this value accordingly
         private const string KnownGoodThumbprint = "your known good thumbprint here";
         private const string ExpectedHostname = "example.com";
