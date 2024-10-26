@@ -688,6 +688,10 @@ namespace ARC_Firmware_Tool
                 if (downloadButton == null)
                 {
                     MessageBox.Show("Could not get the redirect to the download URL.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Send link to textbox if we fail
+                    AppendTextToRichTextBox(richTextBox1, "");
+                    AppendTextToRichTextBox(richTextBox1, "Looks like it broke try:\n\nhttps://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+
                     return;
                 }
 
