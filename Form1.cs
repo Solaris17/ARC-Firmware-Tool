@@ -1,8 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using Octokit;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
 using System.Management;
@@ -668,84 +667,91 @@ namespace ARC_Firmware_Tool
         }
 
         // Let's download the latest driver
-        // Need to use Selenium now because Intel changed there webpage
         private async void downloadDriverToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
+
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
+
+            // Load the main URL
+            HtmlWeb web = new HtmlWeb();
+            HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+
+            // Find the URL of the file you want to download we need to use the class names (inspect the page) to see what its serving us
+            var downloadButton = document.DocumentNode.SelectSingleNode("//button[@class='dc-page-available-downloads-hero-button__cta dc-page-available-downloads-hero-button_cta available-download-button__cta']");
+            string downloadUrl = downloadButton.GetAttributeValue("data-href", "");
+
+            // Extract the file name from the second <span> element because sometimes download buttons contain multiple spans
+            var fileNameElement = downloadButton.SelectNodes(".//span[@class='dc-page-available-downloads-hero-button_cta__label']");
+            string fileName = fileNameElement[1].InnerText.Trim(); // Use [1] to select the second <span> element (it usually starts at 0)
+
+            if (!string.IsNullOrEmpty(downloadUrl))
             {
-                // Clear the RichTextBox
-                richTextBox1.Clear();
-                AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
-        
-                // Configure ChromeDriverService to run without showing the console window
-                var chromeDriverService = ChromeDriverService.CreateDefaultService();
-                chromeDriverService.HideCommandPromptWindow = true; // Hide the console
-                chromeDriverService.SuppressInitialDiagnosticInformation = true; // Suppress diagnostic logs
-        
-                var chromeOptions = new ChromeOptions();
-                chromeOptions.AddArgument("--headless"); // Run Chrome in headless mode
-                chromeOptions.AddArgument("--disable-gpu"); // Disable GPU rendering
-                chromeOptions.AddArgument("--window-size=1920,1080"); // Set a virtual window size
-                chromeOptions.AddArgument("--log-level=3"); // Suppress logs
-        
-                using (IWebDriver driver = new ChromeDriver(chromeDriverService, chromeOptions))
+                // Prompt the user for a save location
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
+                saveFileDialog.FileName = fileName; // Use the extracted file name we pulled out of the<span>
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    try
+                    string savePath = saveFileDialog.FileName;
+
+                    // Use Task.Run to run the download operation on a separate thread (or we will lock the UI)
+                    await Task.Run(() =>
                     {
-                        // Navigate to the Intel driver page
-                        driver.Navigate().GoToUrl("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
-        
-                        // Wait for the download button to load
-                        var wait = new OpenQA.Selenium.Support.UI.WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                        var downloadButton = wait.Until(d => d.FindElement(By.XPath("//button[@data-wap_ref='download-button']")));
-        
-                        // Extract the download URL and file name
-                        string downloadUrl = downloadButton.GetAttribute("data-href");
-                        string fileName = downloadButton.FindElement(By.XPath(".//span[2]")).Text.Trim();
-        
-                        // Prompt the user for a save location
-                        SaveFileDialog saveFileDialog = new SaveFileDialog
+                        using (WebClient client = new WebClient())
                         {
-                            Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*",
-                            FileName = fileName
-                        };
-        
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            string savePath = saveFileDialog.FileName;
-        
-                            // Use WebClient to download the file
-                            using (WebClient client = new WebClient())
+                            // Handle the DownloadProgressChanged event to update the download status
+                            client.DownloadProgressChanged += (sender, args) =>
                             {
-                                client.DownloadFileCompleted += (s, args) =>
+                                // Update the progress text in richTextBox1 with the progress percentage
+                                int progressPercentage = args.ProgressPercentage;
+                                string progressText = $"Downloading: {progressPercentage}%";
+
+                                // Use BeginInvoke to update the UI control from the background thread
+                                richTextBox1.BeginInvoke(new Action(() =>
                                 {
-                                    if (args.Error == null)
-                                    {
-                                        MessageBox.Show("Download completed.");
-                                    }
-                                    else
-                                    {
-                                        MessageBox.Show($"Error: {args.Error.Message}");
-                                    }
-                                };
-        
+                                    // Set the text to the latest progress text (so we don't append like 5 million lines to console)
+                                    richTextBox1.Text = progressText;
+                                }));
+                            };
+
+                            try
+                            {
+                                // Download the file async so we dont lock primary thread
                                 client.DownloadFileAsync(new Uri(downloadUrl), savePath);
+
+                                // Display message to indicate that the download has started
+                                MessageBox.Show("Download started.");
+
+                                // Handle the DownloadFileCompleted event to show "Download completed" message or else it will pop up after hitting ok even if the stream hasnt ended
+                                client.DownloadFileCompleted += (sender, args) =>
+                                {
+                                    MessageBox.Show("Download completed.");
+                                };
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error downloading file: " + ex.Message);
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error: {ex.Message}");
-                    }
-                    finally
-                    {
-                        driver.Quit();
-                    }
+                    });
                 }
             }
+            else
+            {
+                MessageBox.Show("Could not parse download.");
+            }
 
-    // Lets do a software update (Stable)
-    // Do some version checks
-    // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
-    private async void stableToolStripMenuItem_Click(object sender, EventArgs e)
+            // I literally can't believe I got this to work.
+        }
+
+        // Lets do a software update (Stable)
+        // Do some version checks
+        // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+        private async void stableToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Clear the RichTextBox
             richTextBox1.Clear();
