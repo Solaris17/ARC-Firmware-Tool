@@ -672,80 +672,94 @@ namespace ARC_Firmware_Tool
             // Clear the RichTextBox
             richTextBox1.Clear();
 
-            // Tell them we are checking since this can take some time.
+            // Inform the user that the check is in progress
             AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
 
-            // Load the main URL
-            HtmlWeb web = new HtmlWeb();
-            HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
-
-            // Find the URL of the file you want to download we need to use the class names (inspect the page) to see what its serving us
-            var downloadButton = document.DocumentNode.SelectSingleNode("//button[@class='dc-page-available-downloads-hero-button__cta dc-page-available-downloads-hero-button_cta available-download-button__cta']");
-            string downloadUrl = downloadButton.GetAttributeValue("data-href", "");
-
-            // Extract the file name from the second <span> element because sometimes download buttons contain multiple spans
-            var fileNameElement = downloadButton.SelectNodes(".//span[@class='dc-page-available-downloads-hero-button_cta__label']");
-            string fileName = fileNameElement[1].InnerText.Trim(); // Use [1] to select the second <span> element (it usually starts at 0)
-
-            if (!string.IsNullOrEmpty(downloadUrl))
+            try
             {
+                // Load the main URL
+                HtmlWeb web = new HtmlWeb();
+                HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+
+                // Find the download button and extract the URL
+                var downloadButton = document.DocumentNode.SelectSingleNode(
+                    "//button[@class='dc-page-available-downloads-hero-button__cta dc-page-available-downloads-hero-button_cta available-download-button__cta']");
+
+                if (downloadButton == null)
+                {
+                    MessageBox.Show("Could not get the redirect to the download URL.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Send link to textbox if we fail
+                    AppendTextToRichTextBox(richTextBox1, "");
+                    AppendTextToRichTextBox(richTextBox1, "Looks like it broke try:\n\nhttps://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+
+                    return;
+                }
+
+                string downloadUrl = downloadButton.GetAttributeValue("data-href", "");
+
+                // Extract the file name from the second <span> element
+                var fileNameElement = downloadButton.SelectNodes(".//span[@class='dc-page-available-downloads-hero-button_cta__label']");
+                string fileName = fileNameElement[1].InnerText.Trim();
+
+                if (string.IsNullOrEmpty(downloadUrl))
+                {
+                    MessageBox.Show("Could not get the redirect to the download URL.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 // Prompt the user for a save location
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
-                saveFileDialog.FileName = fileName; // Use the extracted file name we pulled out of the<span>
+                saveFileDialog.FileName = fileName;
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string savePath = saveFileDialog.FileName;
 
-                    // Use Task.Run to run the download operation on a separate thread (or we will lock the UI)
+                    // Use Task.Run to download the file on a separate thread
                     await Task.Run(() =>
                     {
                         using (WebClient client = new WebClient())
                         {
                             // Handle the DownloadProgressChanged event to update the download status
-                            client.DownloadProgressChanged += (sender, args) =>
+                            client.DownloadProgressChanged += (s, args) =>
                             {
-                                // Update the progress text in richTextBox1 with the progress percentage
                                 int progressPercentage = args.ProgressPercentage;
                                 string progressText = $"Downloading: {progressPercentage}%";
 
-                                // Use BeginInvoke to update the UI control from the background thread
                                 richTextBox1.BeginInvoke(new Action(() =>
                                 {
-                                    // Set the text to the latest progress text (so we don't append like 5 million lines to console)
                                     richTextBox1.Text = progressText;
                                 }));
                             };
 
                             try
                             {
-                                // Download the file async so we dont lock primary thread
+                                // Start the download asynchronously
                                 client.DownloadFileAsync(new Uri(downloadUrl), savePath);
 
-                                // Display message to indicate that the download has started
+                                // Notify the user that the download has started
                                 MessageBox.Show("Download started.");
 
-                                // Handle the DownloadFileCompleted event to show "Download completed" message or else it will pop up after hitting ok even if the stream hasnt ended
-                                client.DownloadFileCompleted += (sender, args) =>
+                                // Handle the DownloadFileCompleted event to display a completion message
+                                client.DownloadFileCompleted += (s, args) =>
                                 {
                                     MessageBox.Show("Download completed.");
                                 };
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show("Error downloading file: " + ex.Message);
+                                MessageBox.Show("Error downloading file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                     });
                 }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Could not parse download.");
+                // Handle unexpected errors
+                MessageBox.Show("An unexpected error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // I literally can't believe I got this to work.
         }
 
         // Lets do a software update (Stable)
