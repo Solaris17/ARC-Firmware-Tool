@@ -677,35 +677,23 @@ namespace ARC_Firmware_Tool
 
             try
             {
-                // Load the main URL
+                // Load the page from the new URL
                 HtmlWeb web = new HtmlWeb();
-                HtmlAgilityPack.HtmlDocument document = web.Load("https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
+                HtmlAgilityPack.HtmlDocument document = web.Load("https://teamdotexe.org/downloads/Intel-Driver/");
 
-                // Find the download button and extract the URL
-                var downloadButton = document.DocumentNode.SelectSingleNode(
-                    "//button[@class='dc-page-available-downloads-hero-button__cta dc-page-available-downloads-hero-button_cta available-download-button__cta']");
+                // Find the first .exe link from the page
+                var linkNode = document.DocumentNode.SelectSingleNode("//a[contains(@href, '.exe')]");
 
-                if (downloadButton == null)
+                if (linkNode == null)
                 {
-                    MessageBox.Show("Could not get the redirect to the download URL.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    // Send link to textbox if we fail
-                    AppendTextToRichTextBox(richTextBox1, "");
-                    AppendTextToRichTextBox(richTextBox1, "Looks like it broke try:\n\nhttps://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
-
+                    MessageBox.Show("Could not find a driver to download.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Send the page URL to the text box if no link is found
+                    AppendTextToRichTextBox(richTextBox1, "\nNo driver found. Check manually:\n\nhttps://teamdotexe.org/downloads/Intel-Driver/\nor\nhttps://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
                     return;
                 }
 
-                string downloadUrl = downloadButton.GetAttributeValue("data-href", "");
-
-                // Extract the file name from the second <span> element
-                var fileNameElement = downloadButton.SelectNodes(".//span[@class='dc-page-available-downloads-hero-button_cta__label']");
-                string fileName = fileNameElement[1].InnerText.Trim();
-
-                if (string.IsNullOrEmpty(downloadUrl))
-                {
-                    MessageBox.Show("Could not get the redirect to the download URL.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+                string downloadUrl = "https://teamdotexe.org/downloads/Intel-Driver/" + linkNode.GetAttributeValue("href", "");
+                string fileName = linkNode.InnerText.Trim();
 
                 // Prompt the user for a save location
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -733,6 +721,19 @@ namespace ARC_Firmware_Tool
                                 }));
                             };
 
+                            // Handle the DownloadFileCompleted event to display a completion message
+                            client.DownloadFileCompleted += (s, args) =>
+                            {
+                                if (args.Error != null)
+                                {
+                                    MessageBox.Show("Error downloading file: " + args.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Download completed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }
+                            };
+
                             try
                             {
                                 // Start the download asynchronously
@@ -740,12 +741,6 @@ namespace ARC_Firmware_Tool
 
                                 // Notify the user that the download has started
                                 MessageBox.Show("Download started.");
-
-                                // Handle the DownloadFileCompleted event to display a completion message
-                                client.DownloadFileCompleted += (s, args) =>
-                                {
-                                    MessageBox.Show("Download completed.");
-                                };
                             }
                             catch (Exception ex)
                             {
@@ -1395,7 +1390,7 @@ namespace ARC_Firmware_Tool
             if (e.CloseReason == CloseReason.WindowsShutDown) return;
 
             // Confirm user wants to close
-            switch (MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo))
+            switch (MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
             {
                 case DialogResult.No:
                     e.Cancel = true;
