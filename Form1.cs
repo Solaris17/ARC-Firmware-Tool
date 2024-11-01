@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Management;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 // I am so trash at C# please help
 
@@ -223,7 +224,7 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
                 await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Finished checking file!");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!");
             });
         }
 
@@ -299,7 +300,7 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
                 await RunProcessWithOutputAsync($"oem version", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
             });
         }
 
@@ -457,49 +458,189 @@ namespace ARC_Firmware_Tool
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
-                process.EnableRaisingEvents = true;
-
-                StringBuilder outputBuilder = new StringBuilder();
-
-                process.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
-                };
-
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
-                };
 
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
 
-                await process.WaitForExitAsync();
+                // Start tasks to read output and error streams
+                Task outputTask = Task.Run(() => ReadStream(process.StandardOutput.BaseStream, richTextBox1));
+                Task errorTask = Task.Run(() => ReadStream(process.StandardError.BaseStream, richTextBox1));
 
-                // Append the captured output to the RichTextBox
-                AppendTextToRichTextBox(richTextBox1, outputBuilder.ToString() + Environment.NewLine);
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
             }
         }
 
-        // Helper method for richTextBox1
+        // Class-level variables
+        private int progressLineStartIndex = -1;
+        private string lastProgressLine = string.Empty;
+        private string lastProgressPercentage = string.Empty;
+        private DateTime lastProgressUpdate = DateTime.MinValue;
+
+        // Read strem from IGSC
+        private void ReadStream(Stream stream, RichTextBox richTextBox)
+        {
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                int cInt;
+                StringBuilder lineBuffer = new StringBuilder();
+
+                while ((cInt = reader.Read()) != -1)
+                {
+                    char c = (char)cInt;
+
+                    if (c == '\r')
+                    {
+                        // Carriage return; process the line as a progress line
+                        string line = lineBuffer.ToString().TrimEnd();
+                        lineBuffer.Clear();
+
+                        ProcessLine(line, richTextBox, isProgressLine: true);
+                    }
+                    else if (c == '\n')
+                    {
+                        // Newline; process the line as a regular line
+                        string line = lineBuffer.ToString().TrimEnd();
+                        lineBuffer.Clear();
+
+                        ProcessLine(line, richTextBox, isProgressLine: false);
+                    }
+                    else
+                    {
+                        lineBuffer.Append(c);
+                    }
+                }
+
+                // Append any remaining text
+                if (lineBuffer.Length > 0)
+                {
+                    string line = lineBuffer.ToString().TrimEnd();
+                    ProcessLine(line, richTextBox, isProgressLine: false);
+                }
+
+                // Reset progress tracking variables
+                progressLineStartIndex = -1;
+                lastProgressLine = string.Empty;
+                lastProgressPercentage = string.Empty;
+            }
+        }
+
+        // Process the text returned so we can make it more readable
+        private void ProcessLine(string line, RichTextBox richTextBox, bool isProgressLine)
+        {
+            if (isProgressLine && IsProgressLine(line))
+            {
+                // Handle progress line with throttling and reformatting
+                string formattedLine = FormatProgressLine(line);
+                string percentage = ExtractPercentage(formattedLine);
+
+                if (percentage != lastProgressPercentage)
+                {
+                    lastProgressPercentage = percentage;
+                    ReplaceProgressLineInRichTextBox(richTextBox, formattedLine);
+                }
+                // If the percentage hasn't changed, do nothing
+            }
+            else
+            {
+                // Non-progress line
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    AppendTextToRichTextBox(richTextBox, line);
+
+                    // Insert extra line break after specific lines
+                    if (line.StartsWith("Image:  FW Version:") || line.StartsWith("Device: FW Version:"))
+                    {
+                        AppendTextToRichTextBox(richTextBox, ""); // Append an empty line
+                    }
+                }
+
+                progressLineStartIndex = -1; // Reset progress line index after a non-progress line
+            }
+        }
+
+        // Search for the output we expect from the flash process
+        private bool IsProgressLine(string line)
+        {
+            // Use a regular expression to identify progress lines
+            // Expected format: "Progress X/100:XX%"
+            return Regex.IsMatch(line, @"^Progress\s+\d+/\d+:\s*\d+%$");
+        }
+
+        // Format our captured text
+        private string FormatProgressLine(string line)
+        {
+            // Use regular expression to extract the percentage
+            var match = Regex.Match(line, @"^Progress\s+\d+/\d+:\s*(\d+%)$");
+            if (match.Success)
+            {
+                string percentage = match.Groups[1].Value;
+                return $"Progress: {percentage}";
+            }
+            // If not a progress line, return the original line
+            return line;
+        }
+
+        // Get the percentage value so we can use it
+        private string ExtractPercentage(string line)
+        {
+            // Extract the percentage value from the formatted line "Progress: XX%"
+            var match = Regex.Match(line, @"^Progress:\s*(\d+%)$");
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+            return string.Empty;
+        }
+
+        private void ReplaceProgressLineInRichTextBox(RichTextBox richTextBox, string text)
+        {
+            if (richTextBox.InvokeRequired)
+            {
+                richTextBox.Invoke(new Action(() => ReplaceProgressLineInRichTextBox(richTextBox, text)));
+            }
+            else
+            {
+                if (progressLineStartIndex < 0)
+                {
+                    // Progress line hasn't been set yet; append the text and set the start index
+                    if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
+                    {
+                        // Ensure there's a newline before the progress line
+                        richTextBox.AppendText(Environment.NewLine);
+                    }
+
+                    progressLineStartIndex = richTextBox.TextLength;
+                    richTextBox.AppendText(text);
+                }
+                else
+                {
+                    // Replace the text starting from progressLineStartIndex
+                    int lengthToReplace = richTextBox.TextLength - progressLineStartIndex;
+                    richTextBox.Select(progressLineStartIndex, lengthToReplace);
+                    richTextBox.SelectedText = text;
+                }
+            }
+        }
+
+        // The text box
         private void AppendTextToRichTextBox(RichTextBox richTextBox, string text)
         {
             if (richTextBox.InvokeRequired)
             {
                 richTextBox.Invoke(new Action(() =>
                 {
+                    if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
+                    {
+                        richTextBox.AppendText(Environment.NewLine);
+                    }
                     richTextBox.AppendText(text + Environment.NewLine);
                 }));
             }
             else
             {
+                if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
+                {
+                    richTextBox.AppendText(Environment.NewLine);
+                }
                 richTextBox.AppendText(text + Environment.NewLine);
             }
         }
