@@ -67,6 +67,26 @@ namespace ARC_Firmware_Tool
             ExtractIntelFilesToTemp();
         }
 
+        // Tool strip helper method, this is used to disable the buttons during flash
+        private void SetItemsEnabled(bool enabled)
+        {
+            fileToolStripMenuItem.Enabled = enabled;
+            optionsToolStripMenuItem.Enabled = enabled;
+            downloadToolStripMenuItem.Enabled = enabled;
+            updateToolStripMenuItem.Enabled = enabled;
+            aboutToolStripMenuItem.Enabled = enabled;
+            button1.Enabled = enabled;
+            button2.Enabled = enabled;
+            button3.Enabled = enabled;
+            button4.Enabled = enabled;
+            button5.Enabled = enabled;
+            button6.Enabled = enabled;
+            button7.Enabled = enabled;
+            button8.Enabled = enabled;
+            button9.Enabled = enabled;
+        }
+
+
         // Extracts embedded resources to a temporary folder
         private void ExtractIntelFilesToTemp()
         {
@@ -462,8 +482,7 @@ namespace ARC_Firmware_Tool
             // Begin flash process
 
             // Disable buttons
-            button3.Enabled = false;
-            button2.Enabled = false;
+            SetItemsEnabled(false);
 
             // Clear the RichTextBox
             richTextBox1.Clear();
@@ -508,8 +527,7 @@ namespace ARC_Firmware_Tool
             AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
 
             // Re-Enable buttons
-            button3.Enabled = true;
-            button2.Enabled = true;
+            SetItemsEnabled(true);
         }
 
         private async Task RunProcessesAsync(string executablePath, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
