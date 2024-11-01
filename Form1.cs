@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Management;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 // I am so trash at C# please help
 
@@ -62,6 +63,34 @@ namespace ARC_Firmware_Tool
             // Link click event handler
             richTextBox1.LinkClicked += new LinkClickedEventHandler(RichTextBox1_LinkClicked);
 
+            // Extract Intel files to temp folder once at startup
+            ExtractIntelFilesToTemp();
+        }
+
+        // Extracts embedded resources to a temporary folder
+        private void ExtractIntelFilesToTemp()
+        {
+            // Read the resource files and copy them out.
+            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            String myProject = "ARC_Firmware_Tool";
+            String[] files = { "igsc.exe", "igsc.dll", "Intel-API.exe" };
+            String outputPath = System.IO.Path.GetTempPath();
+
+            foreach (string fileName in files)
+            {
+                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + fileName))
+                {
+                    using (System.IO.FileStream fileStream = new System.IO.FileStream(Path.Combine(outputPath, fileName), System.IO.FileMode.Create))
+                    {
+                        for (int i = 0; i < stream.Length; i++)
+                        {
+                            fileStream.WriteByte((byte)stream.ReadByte());
+                        }
+                        fileStream.Close();
+                    }
+                }
+            }
         }
 
         // Get the current version from the build instead of defining it manually
@@ -92,7 +121,7 @@ namespace ARC_Firmware_Tool
         private void button4_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg1 = new OpenFileDialog();
-            fdlg1.Title = "Open File Dialog";
+            fdlg1.Title = "Select Firmware Bin/Rom";
             fdlg1.InitialDirectory = @"c:\";
             fdlg1.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg1.FilterIndex = 2;
@@ -106,7 +135,7 @@ namespace ARC_Firmware_Tool
         private void button5_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg2 = new OpenFileDialog();
-            fdlg2.Title = "Open File Dialog";
+            fdlg2.Title = "Select Oprom (Data) Bin/Rom";
             fdlg2.InitialDirectory = @"c:\";
             fdlg2.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg2.FilterIndex = 2;
@@ -120,7 +149,7 @@ namespace ARC_Firmware_Tool
         private void button6_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg3 = new OpenFileDialog();
-            fdlg3.Title = "Open File Dialog";
+            fdlg3.Title = "Select Oprom (Code) Bin/Rom";
             fdlg3.InitialDirectory = @"c:\";
             fdlg3.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg3.FilterIndex = 2;
@@ -134,7 +163,7 @@ namespace ARC_Firmware_Tool
         private void button7_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg4 = new OpenFileDialog();
-            fdlg4.Title = "Open File Dialog";
+            fdlg4.Title = "Select Firmware (Data/Config) Bin/Rom";
             fdlg4.InitialDirectory = @"c:\";
             fdlg4.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg4.FilterIndex = 2;
@@ -148,7 +177,7 @@ namespace ARC_Firmware_Tool
         private void button8_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg5 = new OpenFileDialog();
-            fdlg5.Title = "Open File Dialog";
+            fdlg5.Title = "Choose Bin/Rom to check";
             fdlg5.InitialDirectory = @"c:\";
             fdlg5.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg5.FilterIndex = 2;
@@ -170,57 +199,12 @@ namespace ARC_Firmware_Tool
 
             await Task.Run(async () =>
             {
-                // Read the resource files and copy them out.
-                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-                String myProject = "ARC_Firmware_Tool";
-                String file1 = "igsc.exe";
-                String file2 = "igsc.dll";
-                String file3 = "Intel-API.exe";
                 String outputPath = System.IO.Path.GetTempPath();
+                String file1 = "igsc.exe";
                 String executablePath = Path.Combine(outputPath, file1);
 
                 // Create variables from other methods
                 string fdlg5 = textBox5.Text;
-
-                // First file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
-
-                // Next file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
-
-                // Third file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
 
                 // FW File Copies
                 if (!string.IsNullOrEmpty(fdlg5))
@@ -230,33 +214,33 @@ namespace ARC_Firmware_Tool
 
                 AppendTextToRichTextBox(richTextBox1, $"Checking file:\n \"{fdlg5}\"\n");
                 AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
-                await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", file1, outputPath);
+                await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", executablePath, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if FW...\n");
-                await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", file1, outputPath);
+                await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", executablePath, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Data...\n");
-                await RunProcessWithOutputAsync($"oprom-data version -i \"{fdlg5}\"", file1, outputPath);
+                await RunProcessWithOutputAsync($"oprom-data version -i \"{fdlg5}\"", executablePath, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Code...\n");
-                await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", file1, outputPath);
+                await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", executablePath, outputPath);
                 AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
-                await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", file1, outputPath);
+                await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Finished checking file!");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!");
             });
         }
 
-        // Made this asyc so I can add more later.
+        // Made this async so I can add more later.
         // Scan Hardware Button
         private async void button1_Click(object sender, EventArgs e)
         {
             await PerformHardwareScanAsync();
         }
-        
+
         private async Task PerformHardwareScanAsync()
         {
             // Clear the RichTextBox
             richTextBox1.Clear();
 
-            // Stamp date
+            // Stamp date and tool version
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
@@ -264,87 +248,41 @@ namespace ARC_Firmware_Tool
 
             // Get GPU driver version
             string deviceToSearch = "Intel(R) Arc(TM)";
+            HashSet<string> displayedDriverVersions = new HashSet<string>();
 
             await Task.Run(async () =>
             {
-                // Read the resource files and copy them out.
-                // Remember to set these as embedded resources or you will get mad for like 2 hours.
-                System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-                String myProject = "ARC_Firmware_Tool";
-                String file1 = "igsc.exe";
-                String file2 = "igsc.dll";
-                String file3 = "Intel-API.exe";
                 String outputPath = System.IO.Path.GetTempPath();
+                String file1 = "igsc.exe";
                 String executablePath = Path.Combine(outputPath, file1);
 
-                // First file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
-
-                // Next file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
-
-                // Third file.
-                using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
-                {
-                    using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
-                    {
-                        for (int i = 0; i < stream.Length; i++)
-                        {
-                            fileStream.WriteByte((byte)stream.ReadByte());
-                        }
-                        fileStream.Close();
-                    }
-                }
-
-                // AppendTextToRichTextBox(richTextBox1, "Looking up GPU driver version:\n");
-                // Define and use the GetAndDisplayDriverVersions I want to combine this somehow? but I am trying to translate a powershell command and barely know what I'm doing.
-                // Get-WmiObject Win32_PnPSignedDriver | Where-Object { $_.DeviceName -like '*Intel(R) Arc(TM)*' } | Select-Object -ExpandProperty DriverVersion
+                // Retrieve unique driver versions
                 string query = $"SELECT DeviceName, Manufacturer, DriverVersion FROM Win32_PnPSignedDriver WHERE DeviceName LIKE '%{deviceToSearch}%'";
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+
                 foreach (ManagementObject driver in searcher.Get())
                 {
-                    //string device = driver["DeviceName"].ToString();
-                    //string manufacturer = driver["Manufacturer"].ToString();
                     string driverVersion = driver["DriverVersion"].ToString();
-                    //string result = $"{device}\t{manufacturer}\t{driverVersion}\n";
-                    string result = $"{driverVersion}\n";
-                    AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
+
+                    if (displayedDriverVersions.Add(driverVersion))
+                    {
+                        AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: {driverVersion}\n");
+                    }
                 }
 
-                // Retrieve the GOP versions along with adapter names using Intel-API.exe
+                // Retrieve GOP versions along with adapter names using Intel-API.exe
                 List<(string AdapterName, string GopVersion)> adapterInfos = await GetGopVersionsAsync(outputPath);
 
                 if (adapterInfos.Count == 0)
                 {
                     AppendTextToRichTextBox(richTextBox1, "No adapters detected or unable to retrieve GOP versions.\n");
+                    AppendTextToRichTextBox(richTextBox1, "If this is unexpected check device manager for the HECI device or do a clean install of the drivers.\n", bold: true);
                 }
                 else
                 {
                     foreach (var adapterInfo in adapterInfos)
                     {
-                        string message = $"Adapter Name: {adapterInfo.AdapterName}\n"; // Adapter name on one line
-                        message += $"GOP (vBIOS) Version: {adapterInfo.GopVersion}";   // GOP version on the next line
+                        string message = $"Adapter Name: {adapterInfo.AdapterName}\nGOP (vBIOS) Version: {adapterInfo.GopVersion}";
 
                         if (adapterInfo.GopVersion == "0.0.0")
                         {
@@ -357,17 +295,105 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
-                // Call the rest using igsc
-                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
-                await RunProcessWithOutputAsync($"list-devices -i", file1, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
-                await RunProcessWithOutputAsync($"fw hwconfig", file1, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
-                await RunProcessWithOutputAsync($"fw-data version", file1, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
-                await RunProcessWithOutputAsync($"oem version", file1, outputPath);
+                // Call igsc commands with modified device list handling
+                AppendTextToRichTextBox(richTextBox1, "Listing Device and FW/Oprom Versions:\n");
+                await CaptureDeviceListWithSpacingAsync(executablePath, outputPath, "list-devices -i", adapterInfos);
 
-                AppendTextToRichTextBox(richTextBox1, "Finished scanning hardware.");
+                AppendTextToRichTextBox(richTextBox1, "\nThe following is only applicable to Device [1]\n\n", bold: true);
+                AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
+                await RunProcessWithOutputAsync("fw hwconfig", executablePath, outputPath);
+
+                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
+                await RunProcessWithOutputAsync("fw-data version", executablePath, outputPath);
+
+                AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
+                await RunProcessWithOutputAsync("oem version", executablePath, outputPath);
+
+                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
+            });
+        }
+
+        // Capture device list with added spacing and card name
+        private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments, List<(string AdapterName, string GopVersion)> adapterInfos)
+        {
+            await Task.Run(() =>
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = executablePath;
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    int deviceIndex = 0;
+                    bool isFirstDevice = true;
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            // Display card name before each device's details
+                            if (e.Data.Contains("Device ["))
+                            {
+                                if (!isFirstDevice)
+                                {
+                                    AppendTextToRichTextBox(richTextBox1, Environment.NewLine);
+                                }
+
+                                // Display associated adapter name in parentheses
+                                if (deviceIndex < adapterInfos.Count)
+                                {
+                                    AppendTextToRichTextBox(richTextBox1, $"({adapterInfos[deviceIndex].AdapterName})\n");
+                                    deviceIndex++;
+                                }
+                                isFirstDevice = false;
+                            }
+
+                            // Display device information
+                            AppendTextToRichTextBox(richTextBox1, e.Data + Environment.NewLine);
+                        }
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.WaitForExit();
+                }
+            });
+        }
+
+        // Capture device list with added spacing between devices
+        private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments)
+        {
+            await Task.Run(() =>
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = executablePath;
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    bool isFirstDevice = true;
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            if (e.Data.Contains("Device [") && !isFirstDevice)
+                            {
+                                AppendTextToRichTextBox(richTextBox1, Environment.NewLine); // Add space between devices
+                            }
+                            AppendTextToRichTextBox(richTextBox1, e.Data + Environment.NewLine);
+                            isFirstDevice = false;
+                        }
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.WaitForExit();
+                }
             });
         }
 
@@ -430,8 +456,6 @@ namespace ARC_Firmware_Tool
             return adapterInfo;
         }
 
-        
-        // Try to re-factor smarter
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
         {
@@ -451,58 +475,15 @@ namespace ARC_Firmware_Tool
             AppendTextToRichTextBox(richTextBox1, $"ARC Firmware Tool Version: {currentVersion}{Environment.NewLine}");
             AppendTextToRichTextBox(richTextBox1, "Now Flashing...\nDo not close program while flashing is in progress!\n");
 
-            // Read the resource files and copy them out.
-            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            String myProject = "ARC_Firmware_Tool";
-            String file1 = "igsc.exe";
-            String file2 = "igsc.dll";
-            String file3 = "Intel-API.exe";
             String outputPath = System.IO.Path.GetTempPath();
+            String file1 = "igsc.exe";
+            String executablePath = Path.Combine(outputPath, file1);
 
             // Create variables from other methods
             string fdlg1 = textBox1.Text;
             string fdlg2 = textBox2.Text;
             string fdlg3 = textBox3.Text;
             string fdlg4 = textBox4.Text;
-
-            // First file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Next file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Third file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
 
             // FW File Copies
             if (!string.IsNullOrEmpty(fdlg1))
@@ -522,7 +503,7 @@ namespace ARC_Firmware_Tool
                 File.Copy(fdlg4, Path.Combine(outputPath, Path.GetFileName(fdlg4)), true);
             }
 
-            await RunProcessesAsync(file1, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
+            await RunProcessesAsync(executablePath, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
             AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
 
@@ -531,21 +512,32 @@ namespace ARC_Firmware_Tool
             button2.Enabled = true;
         }
 
-        private async Task RunProcessesAsync(string executableFileName, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
+        private async Task RunProcessesAsync(string executablePath, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
         {
             // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty.
             // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
             await Task.Run(async () =>
             {
-                AppendTextToRichTextBox(richTextBox1, $"Flashing FW File:\n \"{fdlg1}\"\n");
-                await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Data File:\n \"{fdlg2}\"\n");
-                await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Code File:\n \"{fdlg3}\"\n");
-                await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executableFileName, outputPath);
-                AppendTextToRichTextBox(richTextBox1, $"Flashing FW Data File:\n \"{fdlg4}\"\n");
-                await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executableFileName, outputPath);
-
+                if (!string.IsNullOrEmpty(fdlg1))
+                {
+                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW File:\n \"{fdlg1}\"\n");
+                    await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executablePath, outputPath);
+                }
+                if (!string.IsNullOrEmpty(fdlg2))
+                {
+                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Data File:\n \"{fdlg2}\"\n");
+                    await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executablePath, outputPath);
+                }
+                if (!string.IsNullOrEmpty(fdlg3))
+                {
+                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Code File:\n \"{fdlg3}\"\n");
+                    await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executablePath, outputPath);
+                }
+                if (!string.IsNullOrEmpty(fdlg4))
+                {
+                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW Data File:\n \"{fdlg4}\"\n");
+                    await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executablePath, outputPath);
+                }
             });
         }
 
@@ -553,56 +545,201 @@ namespace ARC_Firmware_Tool
         {
             using (Process process = new Process())
             {
-                process.StartInfo.FileName = Path.Combine(outputPath, executableFileName);
+                process.StartInfo.FileName = executableFileName;
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
-                process.EnableRaisingEvents = true;
-
-                StringBuilder outputBuilder = new StringBuilder();
-
-                process.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
-                };
-
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
-                };
 
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
 
-                await process.WaitForExitAsync();
+                // Start tasks to read output and error streams
+                Task outputTask = Task.Run(() => ReadStream(process.StandardOutput.BaseStream, richTextBox1));
+                Task errorTask = Task.Run(() => ReadStream(process.StandardError.BaseStream, richTextBox1));
 
-                // Append the captured output to the RichTextBox
-                AppendTextToRichTextBox(richTextBox1, outputBuilder.ToString() + Environment.NewLine);
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
             }
         }
 
-        // Helper method for richTextBox1
-        private void AppendTextToRichTextBox(RichTextBox richTextBox, string text)
+        // Class-level variables
+        private int progressLineStartIndex = -1;
+        private string lastProgressLine = string.Empty;
+        private string lastProgressPercentage = string.Empty;
+        private DateTime lastProgressUpdate = DateTime.MinValue;
+
+        // Read strem from IGSC
+        private void ReadStream(Stream stream, RichTextBox richTextBox)
         {
-            if (richTextBox.InvokeRequired)
+            using (StreamReader reader = new StreamReader(stream))
             {
-                richTextBox.Invoke(new Action(() =>
+                int cInt;
+                StringBuilder lineBuffer = new StringBuilder();
+
+                while ((cInt = reader.Read()) != -1)
                 {
-                    richTextBox.AppendText(text + Environment.NewLine);
-                }));
+                    char c = (char)cInt;
+
+                    if (c == '\r')
+                    {
+                        // Carriage return; process the line as a progress line
+                        string line = lineBuffer.ToString().TrimEnd();
+                        lineBuffer.Clear();
+
+                        ProcessLine(line, richTextBox, isProgressLine: true);
+                    }
+                    else if (c == '\n')
+                    {
+                        // Newline; process the line as a regular line
+                        string line = lineBuffer.ToString().TrimEnd();
+                        lineBuffer.Clear();
+
+                        ProcessLine(line, richTextBox, isProgressLine: false);
+                    }
+                    else
+                    {
+                        lineBuffer.Append(c);
+                    }
+                }
+
+                // Append any remaining text
+                if (lineBuffer.Length > 0)
+                {
+                    string line = lineBuffer.ToString().TrimEnd();
+                    ProcessLine(line, richTextBox, isProgressLine: false);
+                }
+
+                // Reset progress tracking variables
+                progressLineStartIndex = -1;
+                lastProgressLine = string.Empty;
+                lastProgressPercentage = string.Empty;
+            }
+        }
+
+        // Process the text returned so we can make it more readable
+        private void ProcessLine(string line, RichTextBox richTextBox, bool isProgressLine)
+        {
+            if (isProgressLine && IsProgressLine(line))
+            {
+                // Handle progress line with throttling and reformatting
+                string formattedLine = FormatProgressLine(line);
+                string percentage = ExtractPercentage(formattedLine);
+
+                if (percentage != lastProgressPercentage)
+                {
+                    lastProgressPercentage = percentage;
+                    ReplaceProgressLineInRichTextBox(richTextBox, formattedLine);
+                }
+                // If the percentage hasn't changed, do nothing
             }
             else
             {
+                // Non-progress line
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    AppendTextToRichTextBox(richTextBox, line);
+
+                    // Insert extra line break after specific lines
+                    if (line.StartsWith("Image:  FW Version:") || line.StartsWith("Device: FW Version:"))
+                    {
+                        AppendTextToRichTextBox(richTextBox, ""); // Append an empty line
+                    }
+                }
+
+                progressLineStartIndex = -1; // Reset progress line index after a non-progress line
+            }
+        }
+
+        // Search for the output we expect from the flash process
+        private bool IsProgressLine(string line)
+        {
+            // Use a regular expression to identify progress lines
+            // Expected format: "Progress X/100:XX%"
+            return Regex.IsMatch(line, @"^Progress\s+\d+/\d+:\s*\d+%$");
+        }
+
+        // Format our captured text
+        private string FormatProgressLine(string line)
+        {
+            // Use regular expression to extract the percentage
+            var match = Regex.Match(line, @"^Progress\s+\d+/\d+:\s*(\d+%)$");
+            if (match.Success)
+            {
+                string percentage = match.Groups[1].Value;
+                return $"Progress: {percentage}";
+            }
+            // If not a progress line, return the original line
+            return line;
+        }
+
+        // Get the percentage value so we can use it
+        private string ExtractPercentage(string line)
+        {
+            // Extract the percentage value from the formatted line "Progress: XX%"
+            var match = Regex.Match(line, @"^Progress:\s*(\d+%)$");
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+            return string.Empty;
+        }
+
+        private void ReplaceProgressLineInRichTextBox(RichTextBox richTextBox, string text)
+        {
+            if (richTextBox.InvokeRequired)
+            {
+                richTextBox.Invoke(new Action(() => ReplaceProgressLineInRichTextBox(richTextBox, text)));
+            }
+            else
+            {
+                if (progressLineStartIndex < 0)
+                {
+                    // Progress line hasn't been set yet; append the text and set the start index
+                    if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
+                    {
+                        // Ensure there's a newline before the progress line
+                        richTextBox.AppendText(Environment.NewLine);
+                    }
+
+                    progressLineStartIndex = richTextBox.TextLength;
+                    richTextBox.AppendText(text);
+                }
+                else
+                {
+                    // Replace the text starting from progressLineStartIndex
+                    int lengthToReplace = richTextBox.TextLength - progressLineStartIndex;
+                    richTextBox.Select(progressLineStartIndex, lengthToReplace);
+                    richTextBox.SelectedText = text;
+                }
+            }
+        }
+
+        // The text box
+        private void AppendTextToRichTextBox(RichTextBox richTextBox, string text, bool bold = false)
+        {
+            if (richTextBox.InvokeRequired)
+            {
+                richTextBox.Invoke(new Action(() => AppendTextToRichTextBox(richTextBox, text, bold)));
+            }
+            else
+            {
+                // Ensure new line if needed
+                if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
+                {
+                    richTextBox.AppendText(Environment.NewLine);
+                }
+
+                // Apply bold font if requested
+                if (bold)
+                {
+                    richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+                }
+
+                // Append the text and add a new line
                 richTextBox.AppendText(text + Environment.NewLine);
+
+                // Reset font to default
+                richTextBox.SelectionFont = richTextBox.Font;
             }
         }
 
@@ -641,6 +778,7 @@ namespace ARC_Firmware_Tool
                         SaveFileDialog saveFileDialog = new SaveFileDialog();
                         saveFileDialog.FileName = "Latest_Intel_BIOS.zip";  // Set the default file name and extension
                         saveFileDialog.Filter = "Zip Files (*.zip)|*.zip|All Files (*.*)|*.*"; // Set the default file extension filter
+                        saveFileDialog.Title = "Save Latest Bios Pack"; // Set the window title here
                         if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
                             string filePath = saveFileDialog.FileName;
@@ -699,6 +837,7 @@ namespace ARC_Firmware_Tool
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
                 saveFileDialog.FileName = fileName;
+                saveFileDialog.Title = "Save Driver"; // Set the window title here
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -785,7 +924,7 @@ namespace ARC_Firmware_Tool
                     {
                         FileName = $"ARC Firmware Tool {tagName}.exe",
                         Filter = "Executable files (*.exe)|*.exe",
-                        Title = "Save Update File"
+                        Title = "Save New Version"
                     };
 
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -860,23 +999,23 @@ namespace ARC_Firmware_Tool
             }
         }
 
-            // Lets do a software update (Beta)
-            // Do some version checks
-            // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
-            private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
-            {
-                // Clear the RichTextBox
-                richTextBox1.Clear();
+        // Lets do a software update (Beta)
+        // Do some version checks
+        // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+        private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
 
-                // Tell them we are checking since this can take some time.
-                AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
 
             try
-                {
-                    bool updateNeeded = await CheckAndBetaUpdateVersionAsync();
+            {
+                bool updateNeeded = await CheckAndBetaUpdateVersionAsync();
 
-                    if (updateNeeded)
-                    {
+                if (updateNeeded)
+                {
 
                     var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
                     github.Credentials = new Credentials(PersonalAccessToken);
@@ -887,83 +1026,83 @@ namespace ARC_Firmware_Tool
                     string tagName = mostRecentRelease?.TagName ?? "latest";
 
                     var saveFileDialog = new SaveFileDialog
-                        {
-                            FileName = $"ARC Firmware Tool {tagName}.exe",
-                            Filter = "Executable files (*.exe)|*.exe",
-                            Title = "Save Update File"
-                        };
-
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            await DownloadAndSaveBetaUpdate(saveFileDialog.FileName);
-                            MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
-                    else
                     {
-                        MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        FileName = $"ARC Firmware Tool {tagName}.exe",
+                        Filter = "Executable files (*.exe)|*.exe",
+                        Title = "Save New Version"
+                    };
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        await DownloadAndSaveBetaUpdate(saveFileDialog.FileName);
+                        MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-
-            private async Task<bool> CheckAndBetaUpdateVersionAsync()
+            catch (Exception ex)
             {
-                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
-
-                github.Credentials = new Credentials(PersonalAccessToken);
-
-                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
-
-                var latestRelease = releases.FirstOrDefault();
-                if (latestRelease != null)
-                {
-                    string latestVersion = latestRelease.TagName;
-
-                    if (Version.TryParse(latestVersion, out Version latest) &&
-                        Version.TryParse(currentVersion, out Version current) &&
-                        latest > current)
-                    {
-                        return true; // New version is needed
-                    }
-                }
-                return false; // App is up to date
+                MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
 
-            private async Task DownloadAndSaveBetaUpdate(string savePath)
+        private async Task<bool> CheckAndBetaUpdateVersionAsync()
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
             {
-                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                string latestVersion = latestRelease.TagName;
 
-                github.Credentials = new Credentials(PersonalAccessToken);
-
-                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
-
-                var latestRelease = releases.FirstOrDefault();
-                if (latestRelease != null)
+                if (Version.TryParse(latestVersion, out Version latest) &&
+                    Version.TryParse(currentVersion, out Version current) &&
+                    latest > current)
                 {
-                    var asset = latestRelease.Assets.FirstOrDefault();
-                    if (asset != null)
-                    {
-                        string assetUrl = asset.BrowserDownloadUrl;
+                    return true; // New version is needed
+                }
+            }
+            return false; // App is up to date
+        }
 
-                        using (var httpClient = new HttpClient())
+        private async Task DownloadAndSaveBetaUpdate(string savePath)
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                var asset = latestRelease.Assets.FirstOrDefault();
+                if (asset != null)
+                {
+                    string assetUrl = asset.BrowserDownloadUrl;
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetAsync(assetUrl);
+                        if (response.IsSuccessStatusCode)
                         {
-                            var response = await httpClient.GetAsync(assetUrl);
-                            if (response.IsSuccessStatusCode)
+                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
                             {
-                                using (var stream = await response.Content.ReadAsStreamAsync())
-                                using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
-                                {
-                                    await stream.CopyToAsync(fileStream);
-                                }
+                                await stream.CopyToAsync(fileStream);
                             }
                         }
                     }
                 }
             }
+        }
 
         // Lets save the output from the textbox
         private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
@@ -974,7 +1113,8 @@ namespace ARC_Firmware_Tool
 
             // Do file save
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.FileName = $"ARC Flash log " + formattedDateTime;  // Set the default file name and extension
+            saveFileDialog.Title = "Save ARC Log"; // Set the window title here
+            saveFileDialog.FileName = $"ARC log " + formattedDateTime;  // Set the default file name and extension
             saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -993,7 +1133,7 @@ namespace ARC_Firmware_Tool
         private async void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Confirmation dialog with sentences on separate lines
-            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload Confirmation", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload HW Scan Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (dialogResult == DialogResult.Yes)
             {
                 // Await the hardware scan
@@ -1026,7 +1166,7 @@ namespace ARC_Firmware_Tool
 
             // Generate a random alphanumeric string of 12 characters then append it
             string randomString = GenerateRandomString(12);
-            string fileName = $"ARC-Flash-log-{randomString}.txt";
+            string fileName = $"ARC-log-{randomString}.txt";
             string tempFilePath = Path.Combine(Path.GetTempPath(), fileName);
 
             File.WriteAllText(tempFilePath, textToUpload);
@@ -1050,6 +1190,24 @@ namespace ARC_Firmware_Tool
                 // Upload failed
                 richTextBox1.Clear();
                 richTextBox1.AppendText("File upload failed.\n\nPlease check your connection and try again.\n\nYou may need to update AFT\n\n");
+            }
+        }
+
+        // Directly uploads the output from the textbox
+        private void uploadLogToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            // Confirm the upload
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis action is not reversible.", "Upload Log Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Upload the content of richTextBox1 directly without running any scans
+                UploadRichTextBoxContentToFtp();
+            }
+            else
+            {
+                // User canceled the upload, show the message in richTextBox1
+                richTextBox1.Clear();
+                richTextBox1.AppendText("Upload canceled by user.");
             }
         }
 
@@ -1164,282 +1322,131 @@ namespace ARC_Firmware_Tool
         // Trigger IGSC manually
         private void manualToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            string outputPath = Path.GetTempPath();
+            string igscPath = Path.Combine(outputPath, "igsc.exe");
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                CopyIntelFilesToTemp();
-                RunIGSCFromTemp();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+                FileName = "cmd.exe",
+                // Using /K instead of /C so the cmd window stays open after the command is executed
+                // Since IGSC is a console app this appears to create a new cmd window for the IGSC output on exit
+                Arguments = $"/K \"{igscPath}\" -v",
+                UseShellExecute = true,
+                CreateNoWindow = false,
+                WorkingDirectory = outputPath
+            };
 
-        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
-        static void CopyIntelFilesToTemp()
-        {
-            // Read the resource files and copy them out.
-            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-            String myProject = "ARC_Firmware_Tool";
-            String file1 = "igsc.exe";
-            String file2 = "igsc.dll";
-            String file3 = "Intel-API.exe";
-            String outputPath = System.IO.Path.GetTempPath();
-            String executablePath = Path.Combine(outputPath, file1);
-
-            // First file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Next file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Third file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-        }
-
-        // Open a cmd window and run igsc.exe
-        static void RunIGSCFromTemp()
-        {
-            string outputPath = System.IO.Path.GetTempPath();
-            string executablePath = Path.Combine(outputPath, "igsc.exe");
-
-            if (File.Exists(executablePath))
-            {
-                // Define what "startInfo" does
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    // Using /K instead of /C so the cmd window stays open after the command is executed
-                    // Since IGSC is a console app this appears to create a new cmd window for the IGSC output on exit
-                    Arguments = $"/K \"{executablePath}\" -v",
-                    UseShellExecute = true,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false,
-                    CreateNoWindow = false,
-                    WorkingDirectory = Path.GetDirectoryName(executablePath)
-                };
-
-                // Execute "startInfo"
-                using (Process process = new Process())
-                {
-                    process.StartInfo = startInfo;
-                    process.Start();
-                    process.WaitForExit();
-                }
-            }
-            else
-            {
-                throw new Exception("Failed to copy igsc.exe or igsc.exe does not exist.");
-            }
+            Process.Start(startInfo);
         }
 
         // API Debug
-        // Trigger API manually
+        // Trigger Intel-API manually
         private async void aPIDebugToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Clear the RichTextBox
-            richTextBox1.Clear();
+            string outputPath = Path.GetTempPath();
+            string intelApiPath = Path.Combine(outputPath, "Intel-API.exe");
 
-            try
-            {
-                CopyIntelAPIFilesToTemp();
-                await RunAPIFromTemp(richTextBox1); // Pass to the RichTextBox
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            await RunAPIFromTemp(intelApiPath);
         }
 
-        // Copy igsc.exe, igsc.dll and Intel-API.exe to temp
-        static void CopyIntelAPIFilesToTemp()
+        private async Task RunAPIFromTemp(string intelApiPath)
         {
-            // Read the resource files and copy them out.
-            System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-
-            String myProject = "ARC_Firmware_Tool";
-            String file1 = "igsc.exe";
-            String file2 = "igsc.dll";
-            String file3 = "Intel-API.exe";
-            String outputPath = System.IO.Path.GetTempPath();
-            String executablePath = Path.Combine(outputPath, file3);
-
-            // First file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file1))
+            if (File.Exists(intelApiPath))
             {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file1, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Next file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file2))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file2, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-
-            // Third file.
-            using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(myProject + ".Resources." + file3))
-            {
-                using (System.IO.FileStream fileStream = new System.IO.FileStream(outputPath + "\\" + file3, System.IO.FileMode.Create))
-                {
-                    for (int i = 0; i < stream.Length; i++)
-                    {
-                        fileStream.WriteByte((byte)stream.ReadByte());
-                    }
-                    fileStream.Close();
-                }
-            }
-        }
-
-        // Run Intel-API.exe
-        // Leave myself a lot of notes
-        static async Task RunAPIFromTemp(RichTextBox richTextBox1)
-        {
-            string outputPath = System.IO.Path.GetTempPath();
-            string executablePath = Path.Combine(outputPath, "Intel-API.exe");
-
-            if (File.Exists(executablePath))
-            {
-                // Define what "startInfo" does
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    FileName = executablePath,
-                    UseShellExecute = false, // Set to false to redirect output
-                    RedirectStandardOutput = true, // Redirect standard output
-                    RedirectStandardError = true, // Optionally, capture error messages
-                    CreateNoWindow = true, // No need to create a window
-                    WorkingDirectory = Path.GetDirectoryName(executablePath)
-                };
-
-                // Execute "startInfo"
                 using (Process process = new Process())
                 {
-                    process.StartInfo = startInfo;
-                    process.Start();
+                    process.StartInfo.FileName = intelApiPath;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.CreateNoWindow = true;
 
-                    // Read the output stream asynchronously
-                    while (!process.StandardOutput.EndOfStream)
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        string line = await process.StandardOutput.ReadLineAsync();
-                        richTextBox1.Invoke(new Action(() =>
+                        if (!string.IsNullOrEmpty(e.Data))
                         {
-                            richTextBox1.AppendText(line + "\n");
-                        }));
-                    }
+                            AppendTextToRichTextBox(richTextBox1, e.Data);
+                        }
+                    };
 
-                    process.WaitForExit();
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    await process.WaitForExitAsync();
                 }
             }
             else
             {
-                throw new Exception("Failed to copy Intel-API.exe or Intel-API.exe does not exist.");
+                AppendTextToRichTextBox(richTextBox1, "Error: Intel-API.exe not found.");
             }
         }
 
         // Leave main form close enabled but ask.
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            base.OnFormClosing(e);
-
-            if (e.CloseReason == CloseReason.WindowsShutDown) return;
+            if (e.CloseReason == CloseReason.WindowsShutDown)
+            {
+                // Perform cleanup here if needed
+                CleanupFiles();
+                base.OnFormClosing(e);
+                return;
+            }
 
             // Confirm user wants to close
-            switch (MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo, MessageBoxIcon.Warning))
-            {
-                case DialogResult.No:
-                    e.Cancel = true;
-                    break;
-                default:
-                    break;
-            }
-        }
+            DialogResult result = MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
 
-        // Lets cleanup before we exit, I was trying to only do .bin and .rom containing "dg" in the name, but people can name them w/e they want.
-        // I guess I could try and create a folder that puts everything we use in it. I will make the bad assumption that its temp and it should be safe. (Other things might use .bin and .rom here)
-        // Method supporting the delete file operation for cleanups on exit.
-        private void DeleteFileOrFilesByPattern(string directoryPath, string pattern)
-        {
-            if (pattern.StartsWith("."))
+            if (result == DialogResult.No)
             {
-                // Delete files by extension
-                string[] filesToDelete = Directory.GetFiles(directoryPath, $"*{pattern}");
-                foreach (string file in filesToDelete)
-                {
-                    File.Delete(file);
-                }
+                e.Cancel = true;
             }
             else
             {
-                // Delete a specific file by name
-                string filePath = Path.Combine(directoryPath, pattern);
-                if (File.Exists(filePath))
+                // User confirmed they want to exit
+                // Perform cleanup here
+                // Pay attention to order of operations
+                CleanupFiles();
+                base.OnFormClosing(e);
+            }
+        }
+
+        // Method supporting the delete file operation for cleanups on exit.
+        private void DeleteFileOrFilesByPattern(string directoryPath, string pattern)
+        {
+            // Use the pattern to find files
+            string[] filesToDelete = Directory.GetFiles(directoryPath, pattern);
+            foreach (string file in filesToDelete)
+            {
+                try
                 {
-                    File.Delete(filePath);
+                    File.Delete(file);
                 }
+                catch (Exception ex)
+                {
+                    // Handle exceptions
+                    Console.WriteLine($"Error deleting file '{file}': {ex.Message}");
+                }
+            }
+        }
+
+        // Cleanup method called upon exit
+        private void CleanupFiles()
+        {
+            string outputPath = Path.GetTempPath();
+
+            // Define the file extensions and specific file names to delete
+            string[] extensionsAndFilesToDelete = { "*.bin", "*.rom", "igsc.dll", "igsc.exe", "Intel-API.exe", "ARC-Flash-log*.txt", "ARC-log*.txt" };
+
+            // Delete files by pattern
+            foreach (string itemToDelete in extensionsAndFilesToDelete)
+            {
+                DeleteFileOrFilesByPattern(outputPath, itemToDelete);
             }
         }
 
         // Exit button
         private void button2_Click(object sender, EventArgs e)
         {
-            string outputPath = Path.GetTempPath();
-
-            // Define the file extensions and specific file names to delete
-            string[] extensionsAndFilesToDelete = { ".bin", ".rom", "igsc.dll", "igsc.exe", "Intel-API.exe" }; // You can also add specific files here.
-
-            // Delete files by extension and specific files
-            foreach (string itemToDelete in extensionsAndFilesToDelete)
-            {
-                DeleteFileOrFilesByPattern(outputPath, itemToDelete);
-            }
-
-            System.Windows.Forms.Application.Exit();
+            // Simulate form closing to trigger the OnFormClosing event
+            this.Close();
         }
 
         // END System Block

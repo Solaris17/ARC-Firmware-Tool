@@ -57,6 +57,7 @@ namespace ARC_Firmware_Tool
             fileToolStripMenuItem = new ToolStripMenuItem();
             saveTextToolStripMenuItem = new ToolStripMenuItem();
             uploadLogToolStripMenuItem = new ToolStripMenuItem();
+            uploadLogToolStripMenuItem1 = new ToolStripMenuItem();
             optionsToolStripMenuItem = new ToolStripMenuItem();
             manualToolStripMenuItem = new ToolStripMenuItem();
             aPIDebugToolStripMenuItem = new ToolStripMenuItem();
@@ -275,7 +276,7 @@ namespace ARC_Firmware_Tool
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, uploadLogToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { saveTextToolStripMenuItem, uploadLogToolStripMenuItem, uploadLogToolStripMenuItem1 });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(37, 22);
             fileToolStripMenuItem.Text = "File";
@@ -283,14 +284,21 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(135, 22);
+            saveTextToolStripMenuItem.Size = new Size(180, 22);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // uploadLogToolStripMenuItem
             // 
             uploadLogToolStripMenuItem.Name = "uploadLogToolStripMenuItem";
-            uploadLogToolStripMenuItem.Size = new Size(135, 22);
-            uploadLogToolStripMenuItem.Text = "Upload Log";
+            uploadLogToolStripMenuItem.Size = new Size(180, 22);
+            uploadLogToolStripMenuItem.Text = "Upload HW Scan";
+            // 
+            // uploadLogToolStripMenuItem1
+            // 
+            uploadLogToolStripMenuItem1.Name = "uploadLogToolStripMenuItem1";
+            uploadLogToolStripMenuItem1.Size = new Size(180, 22);
+            uploadLogToolStripMenuItem1.Text = "Upload Log";
+            uploadLogToolStripMenuItem1.Click += uploadLogToolStripMenuItem1_Click;
             // 
             // optionsToolStripMenuItem
             // 
@@ -442,5 +450,6 @@ namespace ARC_Firmware_Tool
         private ToolStripMenuItem uploadLogToolStripMenuItem;
         private ToolStripMenuItem downloadLatestToolStripMenuItem;
         private ToolStripMenuItem downloadDriverToolStripMenuItem;
+        private ToolStripMenuItem uploadLogToolStripMenuItem1;
     }
 }
