@@ -240,7 +240,7 @@ namespace ARC_Firmware_Tool
             // Clear the RichTextBox
             richTextBox1.Clear();
 
-            // Stamp date
+            // Stamp date and tool version
             DateTime currentDateTime = DateTime.Now;
             string formattedDateTime = currentDateTime.ToString("dddd, MMMM dd yyyy hh:mm tt\n");
             AppendTextToRichTextBox(richTextBox1, $"Current date and time: " + formattedDateTime);
@@ -248,6 +248,7 @@ namespace ARC_Firmware_Tool
 
             // Get GPU driver version
             string deviceToSearch = "Intel(R) Arc(TM)";
+            HashSet<string> displayedDriverVersions = new HashSet<string>();
 
             await Task.Run(async () =>
             {
@@ -255,29 +256,33 @@ namespace ARC_Firmware_Tool
                 String file1 = "igsc.exe";
                 String executablePath = Path.Combine(outputPath, file1);
 
-                // Define and use the GetAndDisplayDriverVersions
+                // Retrieve unique driver versions
                 string query = $"SELECT DeviceName, Manufacturer, DriverVersion FROM Win32_PnPSignedDriver WHERE DeviceName LIKE '%{deviceToSearch}%'";
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+
                 foreach (ManagementObject driver in searcher.Get())
                 {
                     string driverVersion = driver["DriverVersion"].ToString();
-                    string result = $"{driverVersion}\n";
-                    AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: " + result);
+
+                    if (displayedDriverVersions.Add(driverVersion))
+                    {
+                        AppendTextToRichTextBox(richTextBox1, $"Installed GPU driver version: {driverVersion}\n");
+                    }
                 }
 
-                // Retrieve the GOP versions along with adapter names using Intel-API.exe
+                // Retrieve GOP versions along with adapter names using Intel-API.exe
                 List<(string AdapterName, string GopVersion)> adapterInfos = await GetGopVersionsAsync(outputPath);
 
                 if (adapterInfos.Count == 0)
                 {
                     AppendTextToRichTextBox(richTextBox1, "No adapters detected or unable to retrieve GOP versions.\n");
+                    AppendTextToRichTextBox(richTextBox1, "If this is unexpected check device manager for the HECI device or do a clean install of the drivers.\n", bold: true);
                 }
                 else
                 {
                     foreach (var adapterInfo in adapterInfos)
                     {
-                        string message = $"Adapter Name: {adapterInfo.AdapterName}\n"; // Adapter name on one line
-                        message += $"GOP (vBIOS) Version: {adapterInfo.GopVersion}";   // GOP version on the next line
+                        string message = $"Adapter Name: {adapterInfo.AdapterName}\nGOP (vBIOS) Version: {adapterInfo.GopVersion}";
 
                         if (adapterInfo.GopVersion == "0.0.0")
                         {
@@ -290,17 +295,105 @@ namespace ARC_Firmware_Tool
                     }
                 }
 
-                // Call the rest using igsc
-                AppendTextToRichTextBox(richTextBox1, "Listing Devices and FW/Oprom Versions:\n");
-                await RunProcessWithOutputAsync($"list-devices -i", executablePath, outputPath);
+                // Call igsc commands with modified device list handling
+                AppendTextToRichTextBox(richTextBox1, "Listing Device and FW/Oprom Versions:\n");
+                await CaptureDeviceListWithSpacingAsync(executablePath, outputPath, "list-devices -i", adapterInfos);
+
+                AppendTextToRichTextBox(richTextBox1, "\nThe following is only applicable to Device [1]\n\n", bold: true);
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
-                await RunProcessWithOutputAsync($"fw hwconfig", executablePath, outputPath);
+                await RunProcessWithOutputAsync("fw hwconfig", executablePath, outputPath);
+
                 AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
-                await RunProcessWithOutputAsync($"fw-data version", executablePath, outputPath);
+                await RunProcessWithOutputAsync("fw-data version", executablePath, outputPath);
+
                 AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
-                await RunProcessWithOutputAsync($"oem version", executablePath, outputPath);
+                await RunProcessWithOutputAsync("oem version", executablePath, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
+            });
+        }
+
+        // Capture device list with added spacing and card name
+        private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments, List<(string AdapterName, string GopVersion)> adapterInfos)
+        {
+            await Task.Run(() =>
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = executablePath;
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    int deviceIndex = 0;
+                    bool isFirstDevice = true;
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            // Display card name before each device's details
+                            if (e.Data.Contains("Device ["))
+                            {
+                                if (!isFirstDevice)
+                                {
+                                    AppendTextToRichTextBox(richTextBox1, Environment.NewLine);
+                                }
+
+                                // Display associated adapter name in parentheses
+                                if (deviceIndex < adapterInfos.Count)
+                                {
+                                    AppendTextToRichTextBox(richTextBox1, $"({adapterInfos[deviceIndex].AdapterName})\n");
+                                    deviceIndex++;
+                                }
+                                isFirstDevice = false;
+                            }
+
+                            // Display device information
+                            AppendTextToRichTextBox(richTextBox1, e.Data + Environment.NewLine);
+                        }
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.WaitForExit();
+                }
+            });
+        }
+
+        // Capture device list with added spacing between devices
+        private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments)
+        {
+            await Task.Run(() =>
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = executablePath;
+                    process.StartInfo.Arguments = arguments;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    bool isFirstDevice = true;
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            if (e.Data.Contains("Device [") && !isFirstDevice)
+                            {
+                                AppendTextToRichTextBox(richTextBox1, Environment.NewLine); // Add space between devices
+                            }
+                            AppendTextToRichTextBox(richTextBox1, e.Data + Environment.NewLine);
+                            isFirstDevice = false;
+                        }
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.WaitForExit();
+                }
             });
         }
 
@@ -622,26 +715,31 @@ namespace ARC_Firmware_Tool
         }
 
         // The text box
-        private void AppendTextToRichTextBox(RichTextBox richTextBox, string text)
+        private void AppendTextToRichTextBox(RichTextBox richTextBox, string text, bool bold = false)
         {
             if (richTextBox.InvokeRequired)
             {
-                richTextBox.Invoke(new Action(() =>
-                {
-                    if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
-                    {
-                        richTextBox.AppendText(Environment.NewLine);
-                    }
-                    richTextBox.AppendText(text + Environment.NewLine);
-                }));
+                richTextBox.Invoke(new Action(() => AppendTextToRichTextBox(richTextBox, text, bold)));
             }
             else
             {
+                // Ensure new line if needed
                 if (richTextBox.TextLength > 0 && richTextBox.Text[richTextBox.TextLength - 1] != '\n')
                 {
                     richTextBox.AppendText(Environment.NewLine);
                 }
+
+                // Apply bold font if requested
+                if (bold)
+                {
+                    richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+                }
+
+                // Append the text and add a new line
                 richTextBox.AppendText(text + Environment.NewLine);
+
+                // Reset font to default
+                richTextBox.SelectionFont = richTextBox.Font;
             }
         }
 
@@ -901,23 +999,23 @@ namespace ARC_Firmware_Tool
             }
         }
 
-            // Lets do a software update (Beta)
-            // Do some version checks
-            // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
-            private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
-            {
-                // Clear the RichTextBox
-                richTextBox1.Clear();
+        // Lets do a software update (Beta)
+        // Do some version checks
+        // Maybe make a temp process to close and open the new version later but file handling is hard and I hate it
+        private async void betaUpdateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Clear the RichTextBox
+            richTextBox1.Clear();
 
-                // Tell them we are checking since this can take some time.
-                AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
+            // Tell them we are checking since this can take some time.
+            AppendTextToRichTextBox(richTextBox1, "Checking for new version (Beta)...");
 
             try
-                {
-                    bool updateNeeded = await CheckAndBetaUpdateVersionAsync();
+            {
+                bool updateNeeded = await CheckAndBetaUpdateVersionAsync();
 
-                    if (updateNeeded)
-                    {
+                if (updateNeeded)
+                {
 
                     var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
                     github.Credentials = new Credentials(PersonalAccessToken);
@@ -928,83 +1026,83 @@ namespace ARC_Firmware_Tool
                     string tagName = mostRecentRelease?.TagName ?? "latest";
 
                     var saveFileDialog = new SaveFileDialog
-                        {
-                            FileName = $"ARC Firmware Tool {tagName}.exe",
-                            Filter = "Executable files (*.exe)|*.exe",
-                            Title = "Save New Version"
-                        };
-
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            await DownloadAndSaveBetaUpdate(saveFileDialog.FileName);
-                            MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
-                    else
                     {
-                        MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        FileName = $"ARC Firmware Tool {tagName}.exe",
+                        Filter = "Executable files (*.exe)|*.exe",
+                        Title = "Save New Version"
+                    };
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        await DownloadAndSaveBetaUpdate(saveFileDialog.FileName);
+                        MessageBox.Show("Update downloaded!\n\nPlease relaunch new version.", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("You're already up to date!", "Update Status", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-
-            private async Task<bool> CheckAndBetaUpdateVersionAsync()
+            catch (Exception ex)
             {
-                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
-
-                github.Credentials = new Credentials(PersonalAccessToken);
-
-                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
-
-                var latestRelease = releases.FirstOrDefault();
-                if (latestRelease != null)
-                {
-                    string latestVersion = latestRelease.TagName;
-
-                    if (Version.TryParse(latestVersion, out Version latest) &&
-                        Version.TryParse(currentVersion, out Version current) &&
-                        latest > current)
-                    {
-                        return true; // New version is needed
-                    }
-                }
-                return false; // App is up to date
+                MessageBox.Show("An error occurred: \n(Do you have internet?) \n" + ex.Message, "Update Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
 
-            private async Task DownloadAndSaveBetaUpdate(string savePath)
+        private async Task<bool> CheckAndBetaUpdateVersionAsync()
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
             {
-                var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+                string latestVersion = latestRelease.TagName;
 
-                github.Credentials = new Credentials(PersonalAccessToken);
-
-                var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
-
-                var latestRelease = releases.FirstOrDefault();
-                if (latestRelease != null)
+                if (Version.TryParse(latestVersion, out Version latest) &&
+                    Version.TryParse(currentVersion, out Version current) &&
+                    latest > current)
                 {
-                    var asset = latestRelease.Assets.FirstOrDefault();
-                    if (asset != null)
-                    {
-                        string assetUrl = asset.BrowserDownloadUrl;
+                    return true; // New version is needed
+                }
+            }
+            return false; // App is up to date
+        }
 
-                        using (var httpClient = new HttpClient())
+        private async Task DownloadAndSaveBetaUpdate(string savePath)
+        {
+            var github = new GitHubClient(new ProductHeaderValue("ARC_Firmware_Tool"));
+
+            github.Credentials = new Credentials(PersonalAccessToken);
+
+            var releases = await github.Repository.Release.GetAll(RepoOwner, RepoName);
+
+            var latestRelease = releases.FirstOrDefault();
+            if (latestRelease != null)
+            {
+                var asset = latestRelease.Assets.FirstOrDefault();
+                if (asset != null)
+                {
+                    string assetUrl = asset.BrowserDownloadUrl;
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        var response = await httpClient.GetAsync(assetUrl);
+                        if (response.IsSuccessStatusCode)
                         {
-                            var response = await httpClient.GetAsync(assetUrl);
-                            if (response.IsSuccessStatusCode)
+                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
                             {
-                                using (var stream = await response.Content.ReadAsStreamAsync())
-                                using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create))
-                                {
-                                    await stream.CopyToAsync(fileStream);
-                                }
+                                await stream.CopyToAsync(fileStream);
                             }
                         }
                     }
                 }
             }
+        }
 
         // Lets save the output from the textbox
         private void saveTextToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1015,8 +1113,8 @@ namespace ARC_Firmware_Tool
 
             // Do file save
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Save ARC Flash Log"; // Set the window title here
-            saveFileDialog.FileName = $"ARC Flash log " + formattedDateTime;  // Set the default file name and extension
+            saveFileDialog.Title = "Save ARC Log"; // Set the window title here
+            saveFileDialog.FileName = $"ARC log " + formattedDateTime;  // Set the default file name and extension
             saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -1035,7 +1133,7 @@ namespace ARC_Firmware_Tool
         private async void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Confirmation dialog with sentences on separate lines
-            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload Confirmation", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload HW Scan Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (dialogResult == DialogResult.Yes)
             {
                 // Await the hardware scan
@@ -1068,7 +1166,7 @@ namespace ARC_Firmware_Tool
 
             // Generate a random alphanumeric string of 12 characters then append it
             string randomString = GenerateRandomString(12);
-            string fileName = $"ARC-Flash-log-{randomString}.txt";
+            string fileName = $"ARC-log-{randomString}.txt";
             string tempFilePath = Path.Combine(Path.GetTempPath(), fileName);
 
             File.WriteAllText(tempFilePath, textToUpload);
@@ -1092,6 +1190,24 @@ namespace ARC_Firmware_Tool
                 // Upload failed
                 richTextBox1.Clear();
                 richTextBox1.AppendText("File upload failed.\n\nPlease check your connection and try again.\n\nYou may need to update AFT\n\n");
+            }
+        }
+
+        // Directly uploads the output from the textbox
+        private void uploadLogToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            // Confirm the upload
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis action is not reversible.", "Upload Log Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Upload the content of richTextBox1 directly without running any scans
+                UploadRichTextBoxContentToFtp();
+            }
+            else
+            {
+                // User canceled the upload, show the message in richTextBox1
+                richTextBox1.Clear();
+                richTextBox1.AppendText("Upload canceled by user.");
             }
         }
 
@@ -1216,7 +1332,8 @@ namespace ARC_Firmware_Tool
                 // Since IGSC is a console app this appears to create a new cmd window for the IGSC output on exit
                 Arguments = $"/K \"{igscPath}\" -v",
                 UseShellExecute = true,
-                CreateNoWindow = false
+                CreateNoWindow = false,
+                WorkingDirectory = outputPath
             };
 
             Process.Start(startInfo);
@@ -1275,7 +1392,7 @@ namespace ARC_Firmware_Tool
             }
 
             // Confirm user wants to close
-            DialogResult result = MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult result = MessageBox.Show(this, "Are you sure you want to close?\n\nThis is dangerous if you are flashing!", "Closing", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
 
             if (result == DialogResult.No)
             {
@@ -1316,7 +1433,7 @@ namespace ARC_Firmware_Tool
             string outputPath = Path.GetTempPath();
 
             // Define the file extensions and specific file names to delete
-            string[] extensionsAndFilesToDelete = { "*.bin", "*.rom", "igsc.dll", "igsc.exe", "Intel-API.exe", "ARC-Flash-log*.txt" };
+            string[] extensionsAndFilesToDelete = { "*.bin", "*.rom", "igsc.dll", "igsc.exe", "Intel-API.exe", "ARC-Flash-log*.txt", "ARC-log*.txt" };
 
             // Delete files by pattern
             foreach (string itemToDelete in extensionsAndFilesToDelete)
