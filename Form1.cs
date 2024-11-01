@@ -121,7 +121,7 @@ namespace ARC_Firmware_Tool
         private void button4_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg1 = new OpenFileDialog();
-            fdlg1.Title = "Open File Dialog";
+            fdlg1.Title = "Select Firmware Bin/Rom";
             fdlg1.InitialDirectory = @"c:\";
             fdlg1.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg1.FilterIndex = 2;
@@ -135,7 +135,7 @@ namespace ARC_Firmware_Tool
         private void button5_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg2 = new OpenFileDialog();
-            fdlg2.Title = "Open File Dialog";
+            fdlg2.Title = "Select Oprom (Data) Bin/Rom";
             fdlg2.InitialDirectory = @"c:\";
             fdlg2.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg2.FilterIndex = 2;
@@ -149,7 +149,7 @@ namespace ARC_Firmware_Tool
         private void button6_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg3 = new OpenFileDialog();
-            fdlg3.Title = "Open File Dialog";
+            fdlg3.Title = "Select Oprom (Code) Bin/Rom";
             fdlg3.InitialDirectory = @"c:\";
             fdlg3.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg3.FilterIndex = 2;
@@ -163,7 +163,7 @@ namespace ARC_Firmware_Tool
         private void button7_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg4 = new OpenFileDialog();
-            fdlg4.Title = "Open File Dialog";
+            fdlg4.Title = "Select Firmware (Data/Config) Bin/Rom";
             fdlg4.InitialDirectory = @"c:\";
             fdlg4.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg4.FilterIndex = 2;
@@ -177,7 +177,7 @@ namespace ARC_Firmware_Tool
         private void button8_Click(object sender, EventArgs e)
         {
             OpenFileDialog fdlg5 = new OpenFileDialog();
-            fdlg5.Title = "Open File Dialog";
+            fdlg5.Title = "Choose Bin/Rom to check";
             fdlg5.InitialDirectory = @"c:\";
             fdlg5.Filter = "All files (*.*)|*.*|All files (*.*)|*.*";
             fdlg5.FilterIndex = 2;
@@ -680,6 +680,7 @@ namespace ARC_Firmware_Tool
                         SaveFileDialog saveFileDialog = new SaveFileDialog();
                         saveFileDialog.FileName = "Latest_Intel_BIOS.zip";  // Set the default file name and extension
                         saveFileDialog.Filter = "Zip Files (*.zip)|*.zip|All Files (*.*)|*.*"; // Set the default file extension filter
+                        saveFileDialog.Title = "Save Latest Bios Pack"; // Set the window title here
                         if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
                             string filePath = saveFileDialog.FileName;
@@ -738,6 +739,7 @@ namespace ARC_Firmware_Tool
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
                 saveFileDialog.FileName = fileName;
+                saveFileDialog.Title = "Save Driver"; // Set the window title here
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -824,7 +826,7 @@ namespace ARC_Firmware_Tool
                     {
                         FileName = $"ARC Firmware Tool {tagName}.exe",
                         Filter = "Executable files (*.exe)|*.exe",
-                        Title = "Save Update File"
+                        Title = "Save New Version"
                     };
 
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -929,7 +931,7 @@ namespace ARC_Firmware_Tool
                         {
                             FileName = $"ARC Firmware Tool {tagName}.exe",
                             Filter = "Executable files (*.exe)|*.exe",
-                            Title = "Save Update File"
+                            Title = "Save New Version"
                         };
 
                         if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -1013,6 +1015,7 @@ namespace ARC_Firmware_Tool
 
             // Do file save
             SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Save ARC Flash Log"; // Set the window title here
             saveFileDialog.FileName = $"ARC Flash log " + formattedDateTime;  // Set the default file name and extension
             saveFileDialog.Filter = "Log Files (*.log)|*.log|All Files (*.*)|*.*";
 
