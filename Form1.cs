@@ -807,7 +807,7 @@ namespace ARC_Firmware_Tool
                                 await stream.CopyToAsync(fileStream);
                             }
 
-                            MessageBox.Show("Files downloaded successfully!");
+                            MessageBox.Show("Files downloaded successfully!", "Bios Saved");
                         }
                     }
                     else
@@ -827,23 +827,17 @@ namespace ARC_Firmware_Tool
         {
             // Clear the RichTextBox
             richTextBox1.Clear();
-
-            // Inform the user that the check is in progress
             AppendTextToRichTextBox(richTextBox1, "Checking for new Driver...");
 
             try
             {
-                // Load the page from the new URL
                 HtmlWeb web = new HtmlWeb();
                 HtmlAgilityPack.HtmlDocument document = web.Load("https://teamdotexe.org/downloads/Intel-Driver/");
-
-                // Find the first .exe link from the page
                 var linkNode = document.DocumentNode.SelectSingleNode("//a[contains(@href, '.exe')]");
 
                 if (linkNode == null)
                 {
                     MessageBox.Show("Could not find a driver to download.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    // Send the page URL to the text box if no link is found
                     AppendTextToRichTextBox(richTextBox1, "\nNo driver found. Check manually:\n\nhttps://teamdotexe.org/downloads/Intel-Driver/\nor\nhttps://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html");
                     return;
                 }
@@ -851,65 +845,59 @@ namespace ARC_Firmware_Tool
                 string downloadUrl = "https://teamdotexe.org/downloads/Intel-Driver/" + linkNode.GetAttributeValue("href", "");
                 string fileName = linkNode.InnerText.Trim();
 
-                // Prompt the user for a save location
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*";
-                saveFileDialog.FileName = fileName;
-                saveFileDialog.Title = "Save Driver"; // Set the window title here
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Exe Files (*.exe)|*.exe|All Files (*.*)|*.*",
+                    FileName = fileName,
+                    Title = "Save Driver"
+                };
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string savePath = saveFileDialog.FileName;
 
-                    // Use Task.Run to download the file on a separate thread
-                    await Task.Run(() =>
+                    using (HttpClient client = new HttpClient { Timeout = TimeSpan.FromHours(1) })
+                    using (var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
                     {
-                        using (WebClient client = new WebClient())
+                        response.EnsureSuccessStatusCode();
+
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+                        using (var fileStream = new FileStream(savePath, System.IO.FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                         {
-                            // Handle the DownloadProgressChanged event to update the download status
-                            client.DownloadProgressChanged += (s, args) =>
-                            {
-                                int progressPercentage = args.ProgressPercentage;
-                                string progressText = $"Downloading: {progressPercentage}%";
+                            var buffer = new byte[8192];
+                            long totalBytes = response.Content.Headers.ContentLength ?? 0;
+                            long bytesReadSoFar = 0;
+                            int bytesRead;
+                            DateTime lastUpdate = DateTime.Now;
 
-                                richTextBox1.BeginInvoke(new Action(() =>
-                                {
-                                    richTextBox1.Text = progressText;
-                                }));
-                            };
-
-                            // Handle the DownloadFileCompleted event to display a completion message
-                            client.DownloadFileCompleted += (s, args) =>
+                            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                             {
-                                if (args.Error != null)
+                                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                                bytesReadSoFar += bytesRead;
+
+                                // Update every 5% or every second to avoid UI lock
+                                if (DateTime.Now - lastUpdate > TimeSpan.FromSeconds(1) ||
+                                    (double)bytesReadSoFar / totalBytes * 100 >= 5)
                                 {
-                                    MessageBox.Show("Error downloading file: " + args.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    int progress = (int)((double)bytesReadSoFar / totalBytes * 100);
+                                    richTextBox1.Invoke(new Action(() =>
+                                    {
+                                        richTextBox1.Text = $"Downloading: {progress}%";
+                                    }));
+                                    lastUpdate = DateTime.Now;
                                 }
-                                else
-                                {
-                                    MessageBox.Show("Download completed.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                }
-                            };
-
-                            try
-                            {
-                                // Start the download asynchronously
-                                client.DownloadFileAsync(new Uri(downloadUrl), savePath);
-
-                                // Notify the user that the download has started
-                                MessageBox.Show("Download started.");
                             }
-                            catch (Exception ex)
+
+                            richTextBox1.Invoke(new Action(() =>
                             {
-                                MessageBox.Show("Error downloading file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
+                                richTextBox1.Text = "Download complete!";
+                            }));
                         }
-                    });
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // Handle unexpected errors
                 MessageBox.Show("An unexpected error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

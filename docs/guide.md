@@ -12,6 +12,10 @@ This comes with some caveats.
 + Installing previous drivers will not rollback firmware (Driver installs are upgrade only)
 + If the flash process times out during the driver install it will not attempt to install the firmware again.
 
+> [!NOTE]
+> Some Vendors use OEM firmware. This means in some cases it may seem like the firmware is not updating. This is because the OEM firmware is the same as the latest Intel firmware.
+> Other OEMs may customize the firmware. It should be noted just because another OEM publishes an update does not mean it is newer than the Intel firmware, or that your OEM has not already implemented or needed to implement the changes.
+
 As you can see too much can be left up in the air. As development matures and driver release cycles slow down depending on how you maintain your system you may find yourself behind on firmware.
 Further; power limits and clock changes that exist in a certain firmware may not exist in a newer one as power or thermal limits are imposed. This tool will allow you to downgrade which can be beneficial for those chasing performance or stability.
 
