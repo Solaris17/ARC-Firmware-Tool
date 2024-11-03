@@ -284,19 +284,19 @@ namespace ARC_Firmware_Tool
             // saveTextToolStripMenuItem
             // 
             saveTextToolStripMenuItem.Name = "saveTextToolStripMenuItem";
-            saveTextToolStripMenuItem.Size = new Size(180, 22);
+            saveTextToolStripMenuItem.Size = new Size(163, 22);
             saveTextToolStripMenuItem.Text = "Save Log";
             // 
             // uploadLogToolStripMenuItem
             // 
             uploadLogToolStripMenuItem.Name = "uploadLogToolStripMenuItem";
-            uploadLogToolStripMenuItem.Size = new Size(180, 22);
+            uploadLogToolStripMenuItem.Size = new Size(163, 22);
             uploadLogToolStripMenuItem.Text = "Upload HW Scan";
             // 
             // uploadLogToolStripMenuItem1
             // 
             uploadLogToolStripMenuItem1.Name = "uploadLogToolStripMenuItem1";
-            uploadLogToolStripMenuItem1.Size = new Size(180, 22);
+            uploadLogToolStripMenuItem1.Size = new Size(163, 22);
             uploadLogToolStripMenuItem1.Text = "Upload Log";
             uploadLogToolStripMenuItem1.Click += uploadLogToolStripMenuItem1_Click;
             // 

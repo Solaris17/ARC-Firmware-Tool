@@ -22,19 +22,31 @@ Looking for fancy maybe broken features? Check out the [beta branch](https://git
 
 Don't forget to peek at the [firmware matrix](https://github.com/Solaris17/Arc-Firmware)
 
+> [!NOTE]
+> **Please do not request flashing help in this repo!.**
+
+Instead feel free to ask in a more appropriate forum like [TechPowerUp forums](https://www.techpowerup.com/forums/forums/intel-arc-gpus.94/).
+
 -----
 
 ## Utility
 
 > [!NOTE]
-> A few screen shots including the flash sequence as well as the save log function.
+> A few screen shots including the flash sequence as well as the various log functions.
+
+Scan the hardware to get device and FW Information!
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Scanning.gif?raw=true)
 
+Check a firmware file if its of unknown origin!
+
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Checking.gif?raw=true)
+
+Flash a firmware file to the device!
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Flashing.gif?raw=true)
 
+Upload the HW scan or the general out for easy sharing, or simply save it locally!
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Log-save.gif?raw=true)
 
 ## Features
@@ -45,13 +57,26 @@ Don't forget to peek at the [firmware matrix](https://github.com/Solaris17/Arc-F
 - Check for new versions Stable and Beta
 - Download the latest vbios's
 - Download the lastest Driver
-- Upload hardware scan logs for easy sharing
+- Upload Logs for easy sharing
+- Multiple instances disabled for safe flashing
+
+Check for updates
 
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Update.gif?raw=true)
 
+Download the latest vBios pack
+
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Bios-Download.gif?raw=true)
 
-![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/About.png?raw=true)
+Download the latest driver
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Driver-Download.gif?raw=true)
+
+-----
+
+## Misc
+
+![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/About.gif?raw=true)
 
 -----
 
