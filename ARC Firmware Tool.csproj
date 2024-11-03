@@ -13,9 +13,9 @@
     <Copyright>Solaris17 of TPU</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <LangVersion>preview</LangVersion>
-    <AssemblyVersion>1.41.0</AssemblyVersion>
-    <FileVersion>1.41.0</FileVersion>
-    <Version>1.41.0</Version>
+    <AssemblyVersion>1.41.1</AssemblyVersion>
+    <FileVersion>1.41.1</FileVersion>
+    <Version>1.41.1</Version>
     <Company>Solaris17 (www.couchit.net)</Company>
     <Title>ARC Firmware Tool</Title>
     <Description>Firmware Wrapper for IGSC</Description>

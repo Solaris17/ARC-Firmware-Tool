@@ -232,19 +232,20 @@ namespace ARC_Firmware_Tool
                     File.Copy(fdlg5, Path.Combine(outputPath, Path.GetFileName(fdlg5)), true);
                 }
 
-                AppendTextToRichTextBox(richTextBox1, $"Checking file:\n \"{fdlg5}\"\n");
-                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking file:\n", bold: true);
+                AppendTextToRichTextBox(richTextBox1, $"\"{fdlg5}\"\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n", bold: true);
                 await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if FW...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if FW...\n", bold: true);
                 await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Data...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if Oprom-Data...\n", bold: true);
                 await RunProcessWithOutputAsync($"oprom-data version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Code...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if Oprom-Code...\n", bold: true);
                 await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if FW-Data...\n", bold: true);
                 await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!", bold: true);
             });
         }
 
