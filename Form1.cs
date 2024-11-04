@@ -84,6 +84,11 @@ namespace ARC_Firmware_Tool
             button7.Enabled = enabled;
             button8.Enabled = enabled;
             button9.Enabled = enabled;
+            textBox1.Enabled = enabled;
+            textBox2.Enabled = enabled;
+            textBox3.Enabled = enabled;
+            textBox4.Enabled = enabled;
+            textBox5.Enabled = enabled;
         }
 
 
