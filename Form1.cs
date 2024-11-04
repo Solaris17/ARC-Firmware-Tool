@@ -525,7 +525,7 @@ namespace ARC_Firmware_Tool
 
             await RunProcessesAsync(executablePath, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
-            AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
+            AppendTextToRichTextBox(richTextBox1, "\nFlashing complete!");
 
             // Re-Enable buttons
             SetItemsEnabled(true);
@@ -539,22 +539,22 @@ namespace ARC_Firmware_Tool
             {
                 if (!string.IsNullOrEmpty(fdlg1))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW File:\n \"{fdlg1}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW File:\n \"{fdlg1}\"\n");
                     await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg2))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Data File:\n \"{fdlg2}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Data File:\n \"{fdlg2}\"\n");
                     await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg3))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Code File:\n \"{fdlg3}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Code File:\n \"{fdlg3}\"\n");
                     await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg4))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW Data File:\n \"{fdlg4}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW Data File:\n \"{fdlg4}\"\n");
                     await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executablePath, outputPath);
                 }
             });
