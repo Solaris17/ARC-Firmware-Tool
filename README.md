@@ -109,3 +109,5 @@ Patch versions are generally just that though a feature may sneak in; usually in
 # Information
 
 [How it all started](docs/history.md)
+
+[NuGet Requirements](docs/nuget.md)

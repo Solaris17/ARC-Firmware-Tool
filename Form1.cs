@@ -84,6 +84,11 @@ namespace ARC_Firmware_Tool
             button7.Enabled = enabled;
             button8.Enabled = enabled;
             button9.Enabled = enabled;
+            textBox1.Enabled = enabled;
+            textBox2.Enabled = enabled;
+            textBox3.Enabled = enabled;
+            textBox4.Enabled = enabled;
+            textBox5.Enabled = enabled;
         }
 
 
@@ -232,19 +237,20 @@ namespace ARC_Firmware_Tool
                     File.Copy(fdlg5, Path.Combine(outputPath, Path.GetFileName(fdlg5)), true);
                 }
 
-                AppendTextToRichTextBox(richTextBox1, $"Checking file:\n \"{fdlg5}\"\n");
-                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking file:\n", bold: true);
+                AppendTextToRichTextBox(richTextBox1, $"\"{fdlg5}\"\n");
+                AppendTextToRichTextBox(richTextBox1, "Checking if we can identify this image type...\n", bold: true);
                 await RunProcessWithOutputAsync($"image-type -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if FW...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if FW...\n", bold: true);
                 await RunProcessWithOutputAsync($"fw version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Data...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if Oprom-Data...\n", bold: true);
                 await RunProcessWithOutputAsync($"oprom-data version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if Oprom-Code...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if Oprom-Code...\n", bold: true);
                 await RunProcessWithOutputAsync($"oprom-code version -i \"{fdlg5}\"", executablePath, outputPath);
-                AppendTextToRichTextBox(richTextBox1, "Checking if FW-Data...\n");
+                AppendTextToRichTextBox(richTextBox1, "\n\nChecking if FW-Data...\n", bold: true);
                 await RunProcessWithOutputAsync($"fw-data version -i \"{fdlg5}\"", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished checking file!", bold: true);
             });
         }
 
@@ -524,7 +530,7 @@ namespace ARC_Firmware_Tool
 
             await RunProcessesAsync(executablePath, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
-            AppendTextToRichTextBox(richTextBox1, "Flashing complete!");
+            AppendTextToRichTextBox(richTextBox1, "\nFlashing complete!");
 
             // Re-Enable buttons
             SetItemsEnabled(true);
@@ -538,22 +544,22 @@ namespace ARC_Firmware_Tool
             {
                 if (!string.IsNullOrEmpty(fdlg1))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW File:\n \"{fdlg1}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW File:\n \"{fdlg1}\"\n");
                     await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg2))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Data File:\n \"{fdlg2}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Data File:\n \"{fdlg2}\"\n");
                     await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg3))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing Oprom Code File:\n \"{fdlg3}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Code File:\n \"{fdlg3}\"\n");
                     await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executablePath, outputPath);
                 }
                 if (!string.IsNullOrEmpty(fdlg4))
                 {
-                    AppendTextToRichTextBox(richTextBox1, $"Flashing FW Data File:\n \"{fdlg4}\"\n");
+                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW Data File:\n \"{fdlg4}\"\n");
                     await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executablePath, outputPath);
                 }
             });
