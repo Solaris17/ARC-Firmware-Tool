@@ -329,10 +329,10 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "Listing Devices HW Config:\n");
                 await RunProcessWithOutputAsync("fw hwconfig", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Listing FW Data and FW Code Versions:\n");
+                AppendTextToRichTextBox(richTextBox1, "\nListing FW Data and FW Code Versions:\n");
                 await RunProcessWithOutputAsync("fw-data version", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "Listing OEM FW Version:\n");
+                AppendTextToRichTextBox(richTextBox1, "\nListing OEM FW Version:\n");
                 await RunProcessWithOutputAsync("oem version", executablePath, outputPath);
 
                 AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
