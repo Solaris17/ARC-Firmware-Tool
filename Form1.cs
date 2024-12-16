@@ -1145,7 +1145,7 @@ namespace ARC_Firmware_Tool
         private async void uploadLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Confirmation dialog with sentences on separate lines
-            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload HW Scan Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your HW Scan?\n\nThis is not reversible.\n\nPress the \"Scan HW\" button to see what will be uploaded.", "Upload HW Scan Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (dialogResult == DialogResult.Yes)
             {
                 // Await the hardware scan
@@ -1209,7 +1209,7 @@ namespace ARC_Firmware_Tool
         private void uploadLogToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             // Confirm the upload
-            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your log?\n\nThis action is not reversible.", "Upload Log Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to upload your current output?\n\nThis action is not reversible.", "Upload Log Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (dialogResult == DialogResult.Yes)
             {
                 // Upload the content of richTextBox1 directly without running any scans
