@@ -7,11 +7,13 @@ assignees: ''
 
 ---
 
-#STOP Please read the following#
+# STOP Please read the following!
 
-**Issues** are not for general questions on usage or card specific questions!
+**Issues** are ***not*** for general questions on usage or card specific questions!
 
-**If you are NOT making a bug report following the requirements below please post it here [TPU](https://www.techpowerup.com/forums/forums/intel-arc-gpus.94/) instead.**
+**If you are NOT making a bug report following the requirements below please post it here on [TPU](https://www.techpowerup.com/forums/forums/intel-arc-gpus.94/) instead.**
+
+#
 
 **Describe the bug**
 A clear and concise description of what the bug is.
