@@ -335,7 +335,7 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "\nListing OEM FW Version:\n");
                 await RunProcessWithOutputAsync("oem version", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.", bold: true);
             });
         }
 
