@@ -5,8 +5,8 @@ using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
 using System.Management;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+//using System.Net.Security;
+//using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 // I am so trash at C# please help
@@ -30,10 +30,12 @@ namespace ARC_Firmware_Tool
         private const string FtpPassword = "user-password";
         private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
 
+        /*
         // Certificate validation configuration This is the SHA-256 Certificate fingerprint.
         // Fingerprints can change everytime the certificate is renewed, so we need to update this value accordingly
         private const string KnownGoodThumbprint = "your known good thumbprint here";
         private const string ExpectedHostname = "example.com";
+        */
 
         public Form1()
         {
