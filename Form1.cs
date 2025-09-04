@@ -388,7 +388,7 @@ namespace ARC_Firmware_Tool
             });
         }
 
-        // Capture device list with added spacing between devices
+ /*       // Capture device list with added spacing between devices
         private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments)
         {
             await Task.Run(() =>
@@ -422,7 +422,7 @@ namespace ARC_Firmware_Tool
                 }
             });
         }
-
+ */
         // Add Intel API Methods here:
 
         // Method to get the GOP version along with adapter names
@@ -1249,54 +1249,99 @@ namespace ARC_Firmware_Tool
         {
             try
             {
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
-                request.Method = WebRequestMethods.Ftp.UploadFile;
-                request.Credentials = new NetworkCredential(username, password);
-                request.EnableSsl = true; // If using FTPS
-                request.UseBinary = true;
-                request.UsePassive = true;
+                bool result = false;
+                Exception caughtException = null;
 
-                byte[] fileContents = File.ReadAllBytes(filePath);
-                request.ContentLength = fileContents.Length;
-
-                using (Stream requestStream = request.GetRequestStream())
+                // Run the upload task with a 15-second timeout
+                var uploadTask = Task.Run(() =>
                 {
-                    requestStream.Write(fileContents, 0, fileContents.Length);
+                    try
+                    {
+                        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
+                        request.Method = WebRequestMethods.Ftp.UploadFile;
+                        request.Credentials = new NetworkCredential(username, password);
+                        request.EnableSsl = true; // If using FTPS
+                        request.UseBinary = true;
+                        request.UsePassive = true;
+
+                        // This was locking up in beta because FTP hold time stalls this forever, so quick and dirty hard time out catch
+                        // Apply timeouts just in case
+                        request.Timeout = 15000;
+                        request.ReadWriteTimeout = 15000;
+
+                        byte[] fileContents = File.ReadAllBytes(filePath);
+                        request.ContentLength = fileContents.Length;
+
+                        using (Stream requestStream = request.GetRequestStream())
+                        {
+                            requestStream.Write(fileContents, 0, fileContents.Length);
+                        }
+
+                        using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
+
+                            if (response.StatusCode == FtpStatusCode.ClosingData ||
+                                response.StatusCode == FtpStatusCode.CommandOK ||
+                                response.StatusCode == FtpStatusCode.FileActionOK ||
+                                response.StatusCode == FtpStatusCode.ClosingControl)
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        caughtException = ex;
+                    }
+                });
+
+                // Wait for up to 15 seconds
+                if (!uploadTask.Wait(15000))
+                {
+                    // Timeout triggered
+                    MessageBox.Show("The upload timed out.\nPlease check your connection and try again.", "Upload Timeout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
                 }
 
-                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                // If the upload task threw an exception
+                if (caughtException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
-
-                    if (response.StatusCode == FtpStatusCode.ClosingData ||
-                        response.StatusCode == FtpStatusCode.CommandOK ||
-                        response.StatusCode == FtpStatusCode.FileActionOK ||
-                        response.StatusCode == FtpStatusCode.ClosingControl)
+                    if (caughtException is WebException webEx)
                     {
-                        return true; // Assume success if no exception is thrown
+                        var response = webEx.Response as FtpWebResponse;
+                        if (response != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
+                            MessageBox.Show($"FTP error: {response.StatusDescription}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            response.Close();
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP WebException: {webEx.Message}");
+                            MessageBox.Show($"FTP error: {webEx.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                     else
                     {
-                        return false; // Consider other statuses as failures
+                        System.Diagnostics.Debug.WriteLine($"General Exception: {caughtException.Message}");
+                        MessageBox.Show($"Unexpected error: {caughtException.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+
+                    return false;
                 }
+
+                return result;
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                FtpWebResponse response = ex.Response as FtpWebResponse;
-                if (response != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
-                    response.Close();
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"FTP Exception: {ex.Message}");
-                }
-                return false; // Treat exceptions as failures
+                // This should rarely trigger unless the task wrapper itself fails
+                System.Diagnostics.Debug.WriteLine($"Outer Exception: {ex.Message}");
+                MessageBox.Show($"Critical error during upload:\n{ex.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
-
+/*
         // Certificate validation method
         private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
@@ -1330,7 +1375,7 @@ namespace ARC_Firmware_Tool
 
             return true;
         }
-
+*/
         // Trigger IGSC manually
         private void manualToolStripMenuItem_Click(object sender, EventArgs e)
         {
