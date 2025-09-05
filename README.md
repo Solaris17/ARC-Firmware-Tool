@@ -22,7 +22,7 @@ Looking for fancy maybe broken features? Check out the [beta branch](https://git
 
 Don't forget to peek at the [firmware matrix](https://github.com/Solaris17/Arc-Firmware)
 
-> [!NOTE]
+> [!TIP]
 > **Please do not request flashing help in this repo!**
 
 Instead feel free to ask in a more appropriate forum like [TechPowerUp forums](https://www.techpowerup.com/forums/forums/intel-arc-gpus.94/).
@@ -47,6 +47,7 @@ Flash a firmware file to the device!
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Flashing.gif?raw=true)
 
 Upload the HW scan or the general out for easy sharing, or simply save it locally!
+
 ![alt text](https://github.com/Solaris17/ARC-Firmware-Tool/blob/master/pictures/Log-save.gif?raw=true)
 
 ## Features
