@@ -5,3 +5,7 @@
 - Octokit 13.0.1
 - System.Management 8.0.0
 - System.CodeDom 8.0.0
+
+## This project requires the following .NET Version as of AFT 1.44:
+
+- .NET 9.0

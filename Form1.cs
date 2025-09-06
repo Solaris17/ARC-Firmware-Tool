@@ -5,8 +5,9 @@ using HtmlAgilityPack;
 using System.Net;
 using System.Reflection;
 using System.Management;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+using System.Linq;
+//using System.Net.Security;
+//using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 // I am so trash at C# please help
@@ -30,10 +31,12 @@ namespace ARC_Firmware_Tool
         private const string FtpPassword = "user-password";
         private const string DownloadBaseUrl = "https://example.com/yourdirectory/";
 
+        /*
         // Certificate validation configuration This is the SHA-256 Certificate fingerprint.
         // Fingerprints can change everytime the certificate is renewed, so we need to update this value accordingly
         private const string KnownGoodThumbprint = "your known good thumbprint here";
         private const string ExpectedHostname = "example.com";
+        */
 
         public Form1()
         {
@@ -335,7 +338,7 @@ namespace ARC_Firmware_Tool
                 AppendTextToRichTextBox(richTextBox1, "\nListing OEM FW Version:\n");
                 await RunProcessWithOutputAsync("oem version", executablePath, outputPath);
 
-                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.");
+                AppendTextToRichTextBox(richTextBox1, "\nFinished scanning hardware.", bold: true);
             });
         }
 
@@ -388,7 +391,7 @@ namespace ARC_Firmware_Tool
             });
         }
 
-        // Capture device list with added spacing between devices
+ /*       // Capture device list with added spacing between devices
         private async Task CaptureDeviceListWithSpacingAsync(string executablePath, string outputPath, string arguments)
         {
             await Task.Run(() =>
@@ -422,7 +425,7 @@ namespace ARC_Firmware_Tool
                 }
             });
         }
-
+ */
         // Add Intel API Methods here:
 
         // Method to get the GOP version along with adapter names
@@ -482,6 +485,146 @@ namespace ARC_Firmware_Tool
             return adapterInfo;
         }
 
+        // We need some flash helpers for the new output rework
+        // run state
+        private volatile bool _currentProcessHadError = false;
+        private volatile bool _sawAnyProgress = false;
+        private volatile bool _sawProgress100 = false;
+
+        // lowercase markers
+        private static readonly string[] IgscErrorMarkers =
+        {
+            "error:",
+            "mandatory fpt entries missing",
+            "cannot retrieve firmware version from image",
+            "invalid fpt header marker",
+            "invalid image format",
+            "no device to update",
+            "incompatible with the device",
+            "failed",
+            "permission denied",
+            "device not found",
+            "update aborted",
+        };
+
+        private enum StepStatus { Skipped, Success, Failed }
+
+        private class StepResult
+        {
+            public string Label { get; set; } = "";
+            public string FilePath { get; set; } = "";
+            public StepStatus Status { get; set; }
+        }
+
+        private async Task<StepResult> RunFlashStep(
+            string label, string filePath, string igscArgs, string executablePath, string outputPath)
+        {
+            var res = new StepResult { Label = label, FilePath = filePath, Status = StepStatus.Skipped };
+
+            bool IsValidFirmwareFile(string p) =>
+                !string.IsNullOrWhiteSpace(p) &&
+                (p.EndsWith(".bin", StringComparison.OrdinalIgnoreCase) ||
+                 p.EndsWith(".rom", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrWhiteSpace(filePath))
+                return res; // Skipped (no file chosen)
+
+            if (!IsValidFirmwareFile(filePath))
+            {
+                AppendTextToRichTextBox(richTextBox1, $"\nSkipped: \"{filePath}\" is not a .bin/.rom\n", bold: true);
+                return res; // Skipped (bad extension)
+            }
+
+            // Attempt
+            AppendTextToRichTextBox(richTextBox1, $"\nFlashing {label} File:\n \"{filePath}\"\n");
+            bool ok = await RunProcessWithOutputAsync(igscArgs, executablePath, outputPath);
+            res.Status = ok ? StepStatus.Success : StepStatus.Failed;
+            return res;
+        }
+
+        private void PrintFlashSummary(List<StepResult> results)
+        {
+            // Column widths adjust these until it doesnt look like garbage
+            const int labelWidth = 12;
+            const int fileWidth = 28;
+
+            // spacer line before the summary block
+            AppendSummaryLine("");
+
+            // Header
+            AppendSummaryLine("--- Flash Summary ---", bold: true);
+
+            // Rows
+            foreach (var r in results)
+            {
+                string shortName = string.IsNullOrWhiteSpace(r.FilePath) ? "(none)" : Path.GetFileName(r.FilePath);
+
+                string labelCol = (r.Label ?? "").PadRight(labelWidth);
+                string fileCol = EllipsizeMiddle(shortName, fileWidth).PadRight(fileWidth);
+                string statusCol = r.Status.ToString();
+
+                // e.g.  "Oprom Data  : dg2_d_..._oprom-data.rom           ->  Failed"
+                string line = $"{labelCol} : {fileCol}  ->  {statusCol}";
+                AppendSummaryLine(line, bold: r.Status == StepStatus.Failed);
+            }
+
+            // Footer
+            int attempted = results.Count(x => x.Status != StepStatus.Skipped);
+            int ok = results.Count(x => x.Status == StepStatus.Success);
+            int failed = results.Count(x => x.Status == StepStatus.Failed);
+
+            string footer = attempted == 0
+                ? "No valid .bin/.rom images were selected."
+                : failed == 0
+                    ? $"Flashing complete! ({ok}/{attempted} succeeded)"
+                    : ok > 0
+                        ? $"Flashing finished with errors: {failed}/{attempted} failed"
+                        : $"Flashing failed: 0/{attempted} succeeded";
+
+            // Footer
+            AppendSummaryLine("");
+            AppendSummaryLine(footer, bold: true);
+        }
+
+
+        // Try to keep column width
+        private static string EllipsizeMiddle(string s, int max)
+        {
+            if (string.IsNullOrEmpty(s) || s.Length <= max) return s;
+            if (max <= 3) return s.Substring(0, max);
+            int keep = max - 3;
+            int front = keep / 2;
+            int back = keep - front;
+            return s.Substring(0, front) + "..." + s.Substring(s.Length - back);
+        }
+
+        // Append a line and choose font
+        private void AppendSummaryLine(string text, bool bold = false)
+        {
+            if (richTextBox1.InvokeRequired)
+            {
+                richTextBox1.Invoke(new Action(() => AppendSummaryLine(text, bold)));
+                return;
+            }
+
+            // ensure we start on a new line if needed
+            if (richTextBox1.TextLength > 0 && richTextBox1.Text[^1] != '\n')
+                richTextBox1.AppendText(Environment.NewLine);
+
+            // Prefer consolas; fall back to a generic monospace
+            Font mono;
+            try { mono = new Font("Consolas", richTextBox1.Font.Size, bold ? FontStyle.Bold : FontStyle.Regular); }
+            catch { mono = new Font(FontFamily.GenericMonospace, richTextBox1.Font.Size, bold ? FontStyle.Bold : FontStyle.Regular); }
+
+            var prevFont = richTextBox1.SelectionFont;
+            richTextBox1.SelectionFont = mono;
+            richTextBox1.AppendText(text + Environment.NewLine);
+            richTextBox1.SelectionFont = prevFont ?? richTextBox1.Font;
+
+            // Dispose the temporary font
+            mono.Dispose();
+        }
+
         // Flash Button
         private async void button3_Click(object sender, EventArgs e)
         {
@@ -528,45 +671,57 @@ namespace ARC_Firmware_Tool
                 File.Copy(fdlg4, Path.Combine(outputPath, Path.GetFileName(fdlg4)), true);
             }
 
-            await RunProcessesAsync(executablePath, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
+            var results = await RunProcessesAsync(executablePath, fdlg1, fdlg2, fdlg3, fdlg4, outputPath);
 
-            AppendTextToRichTextBox(richTextBox1, "\nFlashing complete!");
+            // Print summary + final verdict (handles partials)
+            PrintFlashSummary(results);
 
-            // Re-Enable buttons
+            // Re-enable buttons
             SetItemsEnabled(true);
         }
 
-        private async Task RunProcessesAsync(string executablePath, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
+        private async Task<List<StepResult>> RunProcessesAsync(
+            string executablePath, string fdlg1, string fdlg2, string fdlg3, string fdlg4, string outputPath)
         {
-            // I should bring back the checkboxes but igsc has issues when I pass "null" values when a checkbox variable is empty.
-            // Maybe I can do some kind of truncating so it doesnt show as a space but its easier to just auto force and auto allow downgrade.
+            var results = new List<StepResult>();
+
             await Task.Run(async () =>
             {
-                if (!string.IsNullOrEmpty(fdlg1))
-                {
-                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW File:\n \"{fdlg1}\"\n");
-                    await RunProcessWithOutputAsync($"fw update -a -f -i \"{fdlg1}\"", executablePath, outputPath);
-                }
-                if (!string.IsNullOrEmpty(fdlg2))
-                {
-                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Data File:\n \"{fdlg2}\"\n");
-                    await RunProcessWithOutputAsync($"oprom-data update -a -i \"{fdlg2}\"", executablePath, outputPath);
-                }
-                if (!string.IsNullOrEmpty(fdlg3))
-                {
-                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing Oprom Code File:\n \"{fdlg3}\"\n");
-                    await RunProcessWithOutputAsync($"oprom-code update -a -i \"{fdlg3}\"", executablePath, outputPath);
-                }
-                if (!string.IsNullOrEmpty(fdlg4))
-                {
-                    AppendTextToRichTextBox(richTextBox1, $"\nFlashing FW Data File:\n \"{fdlg4}\"\n");
-                    await RunProcessWithOutputAsync($"fw-data update -a -i \"{fdlg4}\"", executablePath, outputPath);
-                }
+                // FW
+                if (!string.IsNullOrWhiteSpace(fdlg1))
+                    results.Add(await RunFlashStep("FW", fdlg1, $"fw update -a -f -i \"{fdlg1}\"", executablePath, outputPath));
+                else
+                    results.Add(new StepResult { Label = "FW", FilePath = fdlg1, Status = StepStatus.Skipped });
+
+                // OPROM-DATA
+                if (!string.IsNullOrWhiteSpace(fdlg2))
+                    results.Add(await RunFlashStep("Oprom Data", fdlg2, $"oprom-data update -a -i \"{fdlg2}\"", executablePath, outputPath));
+                else
+                    results.Add(new StepResult { Label = "Oprom Data", FilePath = fdlg2, Status = StepStatus.Skipped });
+
+                // OPROM-CODE
+                if (!string.IsNullOrWhiteSpace(fdlg3))
+                    results.Add(await RunFlashStep("Oprom Code", fdlg3, $"oprom-code update -a -i \"{fdlg3}\"", executablePath, outputPath));
+                else
+                    results.Add(new StepResult { Label = "Oprom Code", FilePath = fdlg3, Status = StepStatus.Skipped });
+
+                // FW-DATA
+                if (!string.IsNullOrWhiteSpace(fdlg4))
+                    results.Add(await RunFlashStep("FW Data", fdlg4, $"fw-data update -a -i \"{fdlg4}\"", executablePath, outputPath));
+                else
+                    results.Add(new StepResult { Label = "FW Data", FilePath = fdlg4, Status = StepStatus.Skipped });
             });
+
+            return results;
+        
         }
 
-        private async Task RunProcessWithOutputAsync(string arguments, string executableFileName, string outputPath)
+        private async Task<bool> RunProcessWithOutputAsync(string arguments, string executableFileName, string outputPath)
         {
+            _currentProcessHadError = false;
+            _sawAnyProgress = false;
+            _sawProgress100 = false;
+
             using (Process process = new Process())
             {
                 process.StartInfo.FileName = executableFileName;
@@ -578,11 +733,20 @@ namespace ARC_Firmware_Tool
 
                 process.Start();
 
-                // Start tasks to read output and error streams
                 Task outputTask = Task.Run(() => ReadStream(process.StandardOutput.BaseStream, richTextBox1));
                 Task errorTask = Task.Run(() => ReadStream(process.StandardError.BaseStream, richTextBox1));
 
                 await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+
+                bool failed = _currentProcessHadError || process.ExitCode != 0;
+
+                // If progress showed up, require 100% to be considered OK
+                if (!failed && _sawAnyProgress)
+                {
+                    failed = !_sawProgress100;
+                }
+
+                return !failed;
             }
         }
 
@@ -640,37 +804,44 @@ namespace ARC_Firmware_Tool
             }
         }
 
-        // Process the text returned so we can make it more readable
         private void ProcessLine(string line, RichTextBox richTextBox, bool isProgressLine)
         {
             if (isProgressLine && IsProgressLine(line))
             {
-                // Handle progress line with throttling and reformatting
                 string formattedLine = FormatProgressLine(line);
                 string percentage = ExtractPercentage(formattedLine);
+
+                if (!string.IsNullOrEmpty(percentage))
+                {
+                    _sawAnyProgress = true;
+                    if (percentage == "100%") _sawProgress100 = true;
+                }
 
                 if (percentage != lastProgressPercentage)
                 {
                     lastProgressPercentage = percentage;
                     ReplaceProgressLineInRichTextBox(richTextBox, formattedLine);
                 }
-                // If the percentage hasn't changed, do nothing
             }
             else
             {
-                // Non-progress line
                 if (!string.IsNullOrWhiteSpace(line))
                 {
                     AppendTextToRichTextBox(richTextBox, line);
 
-                    // Insert extra line break after specific lines
+                    string lower = line.ToLowerInvariant();
+                    if (IgscErrorMarkers.Any(m => lower.Contains(m)))
+                    {
+                        _currentProcessHadError = true;
+                    }
+
                     if (line.StartsWith("Image:  FW Version:") || line.StartsWith("Device: FW Version:"))
                     {
-                        AppendTextToRichTextBox(richTextBox, ""); // Append an empty line
+                        AppendTextToRichTextBox(richTextBox, "");
                     }
                 }
 
-                progressLineStartIndex = -1; // Reset progress line index after a non-progress line
+                progressLineStartIndex = -1;
             }
         }
 
@@ -1249,54 +1420,99 @@ namespace ARC_Firmware_Tool
         {
             try
             {
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
-                request.Method = WebRequestMethods.Ftp.UploadFile;
-                request.Credentials = new NetworkCredential(username, password);
-                request.EnableSsl = true; // If using FTPS
-                request.UseBinary = true;
-                request.UsePassive = true;
+                bool result = false;
+                Exception caughtException = null;
 
-                byte[] fileContents = File.ReadAllBytes(filePath);
-                request.ContentLength = fileContents.Length;
-
-                using (Stream requestStream = request.GetRequestStream())
+                // Run the upload task with a 15-second timeout
+                var uploadTask = Task.Run(() =>
                 {
-                    requestStream.Write(fileContents, 0, fileContents.Length);
+                    try
+                    {
+                        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url + "/" + Path.GetFileName(filePath));
+                        request.Method = WebRequestMethods.Ftp.UploadFile;
+                        request.Credentials = new NetworkCredential(username, password);
+                        request.EnableSsl = true; // If using FTPS
+                        request.UseBinary = true;
+                        request.UsePassive = true;
+
+                        // This was locking up in beta because FTP hold time stalls this forever, so quick and dirty hard time out catch
+                        // Apply timeouts just in case
+                        request.Timeout = 15000;
+                        request.ReadWriteTimeout = 15000;
+
+                        byte[] fileContents = File.ReadAllBytes(filePath);
+                        request.ContentLength = fileContents.Length;
+
+                        using (Stream requestStream = request.GetRequestStream())
+                        {
+                            requestStream.Write(fileContents, 0, fileContents.Length);
+                        }
+
+                        using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
+
+                            if (response.StatusCode == FtpStatusCode.ClosingData ||
+                                response.StatusCode == FtpStatusCode.CommandOK ||
+                                response.StatusCode == FtpStatusCode.FileActionOK ||
+                                response.StatusCode == FtpStatusCode.ClosingControl)
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        caughtException = ex;
+                    }
+                });
+
+                // Wait for up to 15 seconds
+                if (!uploadTask.Wait(15000))
+                {
+                    // Timeout triggered
+                    MessageBox.Show("The upload timed out.\nPlease check your connection and try again.", "Upload Timeout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
                 }
 
-                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                // If the upload task threw an exception
+                if (caughtException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"FTP Response Status: {response.StatusCode}, Description: {response.StatusDescription}");
-
-                    if (response.StatusCode == FtpStatusCode.ClosingData ||
-                        response.StatusCode == FtpStatusCode.CommandOK ||
-                        response.StatusCode == FtpStatusCode.FileActionOK ||
-                        response.StatusCode == FtpStatusCode.ClosingControl)
+                    if (caughtException is WebException webEx)
                     {
-                        return true; // Assume success if no exception is thrown
+                        var response = webEx.Response as FtpWebResponse;
+                        if (response != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
+                            MessageBox.Show($"FTP error: {response.StatusDescription}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            response.Close();
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"FTP WebException: {webEx.Message}");
+                            MessageBox.Show($"FTP error: {webEx.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                     else
                     {
-                        return false; // Consider other statuses as failures
+                        System.Diagnostics.Debug.WriteLine($"General Exception: {caughtException.Message}");
+                        MessageBox.Show($"Unexpected error: {caughtException.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+
+                    return false;
                 }
+
+                return result;
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
-                FtpWebResponse response = ex.Response as FtpWebResponse;
-                if (response != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"FTP WebException: {response.StatusDescription}");
-                    response.Close();
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"FTP Exception: {ex.Message}");
-                }
-                return false; // Treat exceptions as failures
+                // This should rarely trigger unless the task wrapper itself fails
+                System.Diagnostics.Debug.WriteLine($"Outer Exception: {ex.Message}");
+                MessageBox.Show($"Critical error during upload:\n{ex.Message}", "Upload Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
-
+/*
         // Certificate validation method
         private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
@@ -1330,7 +1546,7 @@ namespace ARC_Firmware_Tool
 
             return true;
         }
-
+*/
         // Trigger IGSC manually
         private void manualToolStripMenuItem_Click(object sender, EventArgs e)
         {
